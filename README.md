@@ -19,7 +19,7 @@ This network-on-chip is designed to support mixed-criticality system-on-chip (So
 ## 3. Advanced Validation Techniques
 - **Multi-Condition Expression Coverage**: Configure the simulator (VCS/Questa) to track nested control logic within the allocator. Create structural covergroups verifying the cross-product: `Buffer Fullness × Virtual Channel Availability × Packet Priority Code`. Ensure > 95% expression coverage is achieved under maximum traffic stress.
 - **Congestion Testing via Synthetic Traffic**: Build a UVM agent that injects adversarial spatial traffic models, specifically alternating between Hotspot (all nodes targeting coordinate (1, 1)) and Tornado patterns.
-- **Formal Property Verification (FPV)**: Isolate the allocator block in JasperGold. Write a SystemVerilog Assertion (SVA) to formally prove starvation safety:
+- **Formal Property Verification (FPV)**: Write standard SystemVerilog Assertions (SVA) to formally prove starvation safety. We utilize **SymbiYosys (SBY)** as our open-source formal engine (which is fully cross-compatible with commercial tools like JasperGold):
   ```systemverilog
   assert property (@(posedge clk)
     (low_prio_request && !high_prio_request)[*16] |-> allocator_grant);
