@@ -1,3 +1,5 @@
+`timescale 1ns / 1ps
+
 module topsis_arbiter #(
     parameter PORTS = 4,
     parameter WEIGHT_PRIO = 4'd8,
