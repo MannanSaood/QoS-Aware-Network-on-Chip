@@ -4,7 +4,7 @@
 # =============================================================================
 
 set ROOT_DIR   [file normalize [file dirname [info script]]]
-set SRC_DIR    $ROOT_DIR/src
+set SRC_DIR    $ROOT_DIR
 set PROJ_DIR   $ROOT_DIR/vivado_proj
 set PROJ_NAME  "qos_noc_router"
 set TOP_TB     "tb_router"
@@ -27,17 +27,15 @@ add_files -norecurse [list \
 
 # 4b. Interfaces
 add_files -norecurse [list \
-    $SRC_DIR/if/router2router.sv \
-    $SRC_DIR/if/input_block2crossbar.sv \
-    $SRC_DIR/if/input_block2switch_allocator.sv \
-    $SRC_DIR/if/input_block2vc_allocator.sv \
-    $SRC_DIR/if/switch_allocator2crossbar.sv \
+    $SRC_DIR/include/router2router.sv \
+    $SRC_DIR/include/input_block2crossbar.sv \
+    $SRC_DIR/include/input_block2switch_allocator.sv \
+    $SRC_DIR/include/input_block2vc_allocator.sv \
+    $SRC_DIR/include/switch_allocator2crossbar.sv \
 ]
 
 # 4c. RTL bottom-up
 add_files -norecurse [list \
-    $SRC_DIR/rtl/allocators/round_robin_arbiter.sv \
-    $SRC_DIR/rtl/allocators/separable_input_first_allocator.sv \
     $SRC_DIR/rtl/allocators/vc_allocator.sv \
     $SRC_DIR/rtl/allocators/switch_allocator.sv \
     $SRC_DIR/rtl/input_port/circular_buffer.sv \

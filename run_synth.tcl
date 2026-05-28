@@ -5,7 +5,7 @@
 # =============================================================================
 
 set ROOT_DIR   [file normalize [file dirname [info script]]]
-set SRC_DIR    $ROOT_DIR/src
+set SRC_DIR    $ROOT_DIR
 set RPT_DIR    $ROOT_DIR/reports
 set PROJ_DIR   $ROOT_DIR/vivado_synth_proj
 set PROJ_NAME  "qos_noc_synth"
@@ -21,13 +21,11 @@ create_project $PROJ_NAME $PROJ_DIR -part xc7a35tcpg236-1 -force
 # --- 3. Add sources ---
 add_files -norecurse [list \
     $SRC_DIR/rtl/noc/noc.sv \
-    $SRC_DIR/if/router2router.sv \
-    $SRC_DIR/if/input_block2crossbar.sv \
-    $SRC_DIR/if/input_block2switch_allocator.sv \
-    $SRC_DIR/if/input_block2vc_allocator.sv \
-    $SRC_DIR/if/switch_allocator2crossbar.sv \
-    $SRC_DIR/rtl/allocators/round_robin_arbiter.sv \
-    $SRC_DIR/rtl/allocators/separable_input_first_allocator.sv \
+    $SRC_DIR/include/router2router.sv \
+    $SRC_DIR/include/input_block2crossbar.sv \
+    $SRC_DIR/include/input_block2switch_allocator.sv \
+    $SRC_DIR/include/input_block2vc_allocator.sv \
+    $SRC_DIR/include/switch_allocator2crossbar.sv \
     $SRC_DIR/rtl/allocators/vc_allocator.sv \
     $SRC_DIR/rtl/allocators/switch_allocator.sv \
     $SRC_DIR/rtl/input_port/circular_buffer.sv \
