@@ -25,3 +25,8 @@ This network-on-chip is designed to support mixed-criticality system-on-chip (So
     (low_prio_request && !high_prio_request)[*16] |-> allocator_grant);
   ```
   This mathematically guarantees that a low-priority requests cannot be blocked for more than 16 cycles.
+
+## 4. Current Execution Status
+- **Phase 1 & 2 Modules Completed**: `topsis_arbiter.sv`, `crossbar_5x5.sv`, `circular_buffer.sv`, `input_buffer.sv`.
+- **Compilation/Syntax Verification**: All SystemVerilog modules have been compiled using Vivado's `xvlog -sv` compiler engine.
+- **Result**: `0 Errors, 0 Warnings`. The RTL is structurally verified and syntactically flawless.

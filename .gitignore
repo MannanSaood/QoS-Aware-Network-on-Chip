@@ -1,30 +1,12 @@
-# Vivado / Xilinx generated files
-.Xil/
-*.jou
+# Vivado and XSim artifacts
 *.log
-*.pb
-*.vcd
-*.wdb
+*.jou
 *.str
-*.zip
-*.dir/
+*.pb
+.Xil/
 xsim.dir/
-usage_statistics_webtalk.html
-usage_statistics_webtalk.xml
-vivado.xml
-vivado_pid*.str
-
-# Simulation and Project directories
 vivado_proj/
 vivado_synth_proj/
-vivado_sim/
 reports/
-
-# Log files created by scripts
-vivado_sim_log.txt
-synth_log.txt
-sim_log.txt
-
-# OS generated files
-.DS_Store
-Thumbs.db
+webtalk*
+*.vcd
