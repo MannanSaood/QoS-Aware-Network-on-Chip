@@ -4,20 +4,21 @@ interface router2router;
 
     flit_t data;
     logic is_valid;
-    logic [VC_NUM-1:0] is_on_off;
+    // TOPSIS Architecture updates: Replaced ON/OFF with credit returns per VC
+    logic [VC_NUM-1:0] credit_return;
     logic [VC_NUM-1:0] is_allocatable;
 
     modport upstream (
         output data,
         output is_valid,
-        input is_on_off,
+        input credit_return,
         input is_allocatable
     );
 
     modport downstream (
         input data,
         input is_valid,
-        output is_on_off,
+        output credit_return,
         output is_allocatable
     );
 
