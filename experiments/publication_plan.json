@@ -1,0 +1,25 @@
+{
+  "status": "planned, not the checked-in pilot",
+  "mesh_sides": [4, 8, 16, 32, 64],
+  "warmup_cycles": 5000,
+  "measurement_cycles": 20000,
+  "seeds": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+  "packet_flits": [1, 5, 16],
+  "offered_flits_per_node_cycle": [0.01, 0.025, 0.05, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8],
+  "existing_traffic": ["uniform", "transpose", "hotspot"],
+  "future_traffic": ["tornado", "bit_complement", "bursty", "clustered", "application_trace"],
+  "sensitivity": {
+    "routing_delay_cycles": [1, 2, 3],
+    "virtual_channels": [1, 2, 4, 8],
+    "flits_per_vc": [4, 8, 16],
+    "dyad_threshold": [0.3, 0.45, 0.6, 0.75],
+    "topsis_aggregate_weight": [0.3, 0.5, 0.7, 0.9]
+  },
+  "notes": [
+    "This is a research plan, not an executable configuration for the current CLI.",
+    "Freeze tuning on training workloads before held-out evaluation.",
+    "Check convergence by extending windows; keep saturated or failed runs visible.",
+    "Match buffer budgets and replay traces before quantitative cross-engine error claims.",
+    "Do not interpret simulation wall time as router critical path or energy."
+  ]
+}

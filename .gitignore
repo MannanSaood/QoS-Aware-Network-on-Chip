@@ -1,4 +1,4 @@
-# Vivado and XSim artifacts
+# Original Vivado/XSim artifacts
 *.log
 *.jou
 *.str
@@ -10,3 +10,21 @@ vivado_synth_proj/
 reports/
 webtalk*
 *.vcd
+
+.deps/
+build/
+# Generated experiments, validation receipts, traces and figures remain local.
+/results/
+__pycache__/
+*.pyc
+# Isolated audit copies of upstream sources and host-specific benchmark helpers.
+/simulators/booksim_performance/
+/scripts/build_qos_performance.py
+/scripts/benchmark_qos_link_order.py
+/scripts/capture_qos_performance_state.py
+/scripts/repeat_qos_ordered_benchmark.py
+/scripts/validate_qos_performance.py
+/scripts/write_performance_audit.py
+# Closed paper-reference experiments are maintained separately from this release.
+/scripts/run_paper_reference.py
+/scripts/audit_paper_reference.py
