@@ -3,7 +3,8 @@
 Stages (env SAQR_STAGE):
   g4      the G4 + SAQR-SC held-out (seeds 201-205; complete)
   hpilot  SAQR-H tuning pilot (seeds 101-103; scripts/saqr_h_study.py)
-  g5      fresh held-out for saqr_sc and saqr_h (seeds 301-305; scripts/saqr_h_study.py)
+  g5      fresh held-out: 8 comparators incl. DBAR/Footprint, saqr_sc and saqr_h, 13 traffic
+          patterns (seeds 301-305; scripts/saqr_g5_study.py)
 
 Nothing here changes a frozen protocol. Scripts, binaries and receipts ship
 byte-exact in bundle.tar.gz (git line-ending conversion would change hashed
@@ -75,12 +76,18 @@ class Stage:
         self.name = name
         if name == 'g4':
             self.gp, self.sp = verify_frozen()
-        else:
+        elif name == 'hpilot':
             verify_frozen()                      # the bundle's frozen G4/SAQR-SC files must still be intact
             import saqr_h_study as hs
-            self.hs = hs
-            d = hs.PILOT_DIR if name == 'hpilot' else hs.G5_DIR
-            want = hs.pilot_protocol() if name == 'hpilot' else hs.g5_protocol()
+            d, want = hs.PILOT_DIR, hs.pilot_protocol()
+            have = json.loads((d / 'protocol.json').read_text())
+            assert want == have, f'{name} protocol mismatch (binary, sources or design differ from the frozen ones)'
+            self.dir, self.proto = d, have
+        elif name == 'g5':
+            verify_frozen()
+            import saqr_g5_study as gs
+            self.gs = gs
+            d, want = gs.G5_DIR, gs.protocol()
             have = json.loads((d / 'protocol.json').read_text())
             assert want == have, f'{name} protocol mismatch (binary, sources or design differ from the frozen ones)'
             self.dir, self.proto = d, have
@@ -106,6 +113,12 @@ class Stage:
                   for mode in self.proto['modes'] for r, (alg, env, b) in self.proto['routes'].items()]
             out.append((c, js))
         return out
+
+    def make_trace(self, path, c):
+        if self.name == 'g5':
+            return self.gs.make_trace(path, c)
+        from chr_common import trace
+        return trace(path, c['k'], c['load'], c['seed'], c['traffic'])
 
     def demand(self, c):
         return demand_path(c) if self.name == 'g4' else self.dir / 'cases' / c['name'] / 'demand.txt'

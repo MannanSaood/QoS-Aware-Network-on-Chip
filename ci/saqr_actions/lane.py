@@ -21,7 +21,7 @@ import traceback
 from pathlib import Path
 
 from common import ROOT, Stage
-from chr_common import run, sha, trace
+from chr_common import run, sha
 
 
 def main():
@@ -85,7 +85,7 @@ def main():
             rep['not_started'] += len(rest); continue
         demand = st.demand(c); demand.parent.mkdir(parents=True, exist_ok=True)
         if not demand.exists():
-            trace(demand.parent / 'demand.tmp', c['k'], c['load'], c['seed'], c['traffic']); (demand.parent / 'demand.tmp').replace(demand)
+            st.make_trace(demand.parent / 'demand.tmp', c); (demand.parent / 'demand.tmp').replace(demand)
         s = sha(demand); rep['traces'][c['name']] = s
         if c['name'] in known and known[c['name']] != s:
             rep['trace_mismatch'].append(c['name']); continue      # never run on a trace that differs from earlier receipts

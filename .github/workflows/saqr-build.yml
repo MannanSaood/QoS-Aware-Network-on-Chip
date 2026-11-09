@@ -1,0 +1,39 @@
+# Build + test + hardware cost for the SAQR study binaries (docs/SAQR_SPEC_V2.md §21).
+# build: comparator binary (DBAR/Footprint), all unit tests, RTL-vs-C++ equivalence,
+#        simulator equivalence and smoke runs. synth: Yosys LUT/FF/gate counts.
+# Artifacts: the binary + manifest + receipts (build), synthesis reports (synth).
+name: SAQR build and hardware cost
+
+on:
+  workflow_dispatch:
+
+env:
+  CODE_REF: codex/hybrid-routing-research
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: '${{ env.CODE_REF }}' }
+      - run: sudo apt-get update -q && sudo apt-get install -y -q python3-numpy build-essential flex bison iverilog
+      - run: OUT="$GITHUB_WORKSPACE/build_out" bash ci/saqr_actions/build_test.sh
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with: { name: build, path: build_out, if-no-files-found: ignore }
+
+  synth:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: '${{ env.CODE_REF }}' }
+      - run: sudo apt-get update -q && sudo apt-get install -y -q yosys
+      - run: |
+          tar xzf ci/saqr_actions/qos_tree.tar.gz rtl include 2>/dev/null || true
+          OUT="$GITHUB_WORKSPACE/synth_out" bash ci/saqr_actions/synth.sh
+          cat synth_out/summary.txt >> "$GITHUB_STEP_SUMMARY"
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with: { name: synth, path: synth_out, if-no-files-found: ignore }
