@@ -11,7 +11,12 @@
 set -euo pipefail
 OUT=${OUT:-$PWD/build_out}; mkdir -p "$OUT"
 tar xzf ci/saqr_actions/bundle.tar.gz
+# qos_tree.tar.gz holds ONLY files git cannot carry byte-exact (the gitignored frozen QoS tree and
+# the five baseline headers compared byte-for-byte with it); everything else comes from the checkout,
+# so no archived copy can shadow a newer source file.
 tar xzf ci/saqr_actions/qos_tree.tar.gz
+bad=$(tar tzf ci/saqr_actions/qos_tree.tar.gz | grep -vE '^(\.deps/booksim2_qos/|algorithms/(common/(mesh|select)|xy/routing|dyad/routing|topsis/routing)\.hpp$)' || true)
+if [ -n "$bad" ]; then echo "qos_tree.tar.gz contains files outside its allowed set:"; echo "$bad"; exit 1; fi
 log(){ echo "== $*" | tee -a "$OUT/build_test.log"; }
 
 log "build comparator binary"

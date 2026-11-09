@@ -31,7 +31,6 @@ jobs:
         with: { ref: '${{ env.CODE_REF }}' }
       - run: sudo apt-get update -q && sudo apt-get install -y -q yosys
       - run: |
-          tar xzf ci/saqr_actions/qos_tree.tar.gz rtl include 2>/dev/null || true
           OUT="$GITHUB_WORKSPACE/synth_out" bash ci/saqr_actions/synth.sh
           cat synth_out/summary.txt >> "$GITHUB_STEP_SUMMARY"
       - if: always()
