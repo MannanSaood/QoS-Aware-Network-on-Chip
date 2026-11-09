@@ -1103,4 +1103,5 @@ Per network interface, k = 32 (10-bit ids), `rtl/saqr/saqr_h_classifier.sv`:
 
 Two pieces are still open:
 - **Router reference:** Yosys 0.33 cannot parse the router's SystemVerilog interfaces, so a synthesized router reference is still missing. For scale, the router's input buffers alone hold 5 ports × 4 VCs × 8 flits.
-- **RTL equivalence:** the RTL-vs-C++ equivalence test (74,023 vectors per mode) is being rerun after an Icarus-compatibility fix to the testbench.
+- **RTL equivalence:** passes on Actions (Icarus Verilog). 74,023 of 74,023 vectors match the C++ model with the tracker on, and 74,023 of 74,023 with it off. The vectors mix uniform, hotspot, fixed-destination, flow-set and adversarial phases.
+- **Build reproducibility:** the GitHub build reproduces the frozen comparator binary bit for bit (sha `94193fe2…`).
