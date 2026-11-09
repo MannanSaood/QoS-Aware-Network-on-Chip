@@ -1,1 +1,2 @@
 {"time": "2026-11-09T11:15:44Z", "run_id": "42567750313", "completed": 7763, "failures": [], "interrupted": 0, "not_started": 977, "trace_mismatch": [], "lanes": 10, "lane_hours": [5.54, 5.52, 5.02, 5.53, 5.53, 4.5, 4.77, 4.24, 4.85, 4.6], "gate": "pass 70/70"}
+{"time": "2026-11-09T12:15:44Z", "run_id": "42609861254", "completed": 977, "failures": [], "interrupted": 0, "not_started": 0, "trace_mismatch": [], "lanes": 10, "lane_hours": [0.7, 0.46, 0.28, 0.4, 0.41, 0.42, 0.23, 0.25, 0.19, 0.26]}

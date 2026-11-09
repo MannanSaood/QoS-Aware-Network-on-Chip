@@ -1,6 +1,6 @@
 # SAQR held-out on GitHub Actions: status
 
-Last check: 2026-11-09T11:15:44Z (run 42567750313). Frozen binaries and protocols re-verified by hash in every job.
+Last check: 2026-11-09T12:15:44Z (run 42609861254). Frozen binaries and protocols re-verified by hash in every job.
 
 **Alerts:** none
 
@@ -12,11 +12,12 @@ Last check: 2026-11-09T11:15:44Z (run 42567750313). Frozen binaries and protocol
 | 8x8 | SAQR-SC | 540 | 540 | 0 | 0 | 100.0% |
 | 16x16 | previous candidates + comparators | 4320 | 980 | 3340 | 0 | 100.0% |
 | 16x16 | SAQR-SC | 540 | 0 | 540 | 0 | 100.0% |
-| 32x32 | previous candidates + comparators | 4320 | 0 | 3454 | 866 | 80.0% |
-| 32x32 | SAQR-SC | 540 | 0 | 429 | 111 | 79.4% |
+| 32x32 | previous candidates + comparators | 4320 | 0 | 4320 | 0 | 100.0% |
+| 32x32 | SAQR-SC | 540 | 0 | 540 | 0 | 100.0% |
 
-Remaining runs: 977. Throughput (last waves): 7763 runs/wave. ETA: about 0.1 more waves (~1 h at one wave per 6 h).
+Remaining runs: 0. Throughput (last waves): 4370 runs/wave. ETA: about 0.0 more waves (~0 h at one wave per 6 h).
 
 | wave (UTC) | gate | lanes | completed | failed | interrupted (rerun) | not started |
 |---|---|---:|---:|---:|---:|---:|
 | 2026-11-09T11:15:44Z | pass 70/70 | 10 | 7763 | 0 | 0 | 977 |
+| 2026-11-09T12:15:44Z | - | 10 | 977 | 0 | 0 | 0 |
