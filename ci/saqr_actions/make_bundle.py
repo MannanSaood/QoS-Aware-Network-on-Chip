@@ -36,10 +36,13 @@ FILES = [
     'scripts/traffic_ext.py', 'scripts/saqr_g5_study.py', 'scripts/evaluate_saqr_g5.py', 'scripts/setup_saqr_x.py',
     'algorithms/dbar/routing.hpp', 'algorithms/footprint/routing.hpp', 'simulators/booksim_saqr_x/saqr_routes.cpp',
     '.deps/booksim2_saqr_x/src/booksim',
+    # O1TURN extension of G5 (§21.7)
+    'scripts/saqr_o1t_study.py', 'scripts/evaluate_saqr_o1t.py',
 ]
 # Stage protocol files, included once they exist (pilot protocol, pilot selection, G5 protocol).
 OPTIONAL = ['results/saqr_study/hot/pilot/protocol.json', 'results/saqr_study/hot/pilot/selection.json',
-            'results/saqr_study/hot/g5/protocol.json', 'results/saqr_study/g5/protocol.json']
+            'results/saqr_study/hot/g5/protocol.json', 'results/saqr_study/g5/protocol.json',
+            'results/saqr_study/g5_o1t/protocol.json']
 
 
 def main():
