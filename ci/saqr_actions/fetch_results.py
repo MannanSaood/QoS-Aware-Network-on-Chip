@@ -2,9 +2,10 @@
 
 Copies result.json files that do not exist locally. Where a run exists on both sides
 (local and Actions), the metric blocks must be identical; any difference is reported
-and nothing is overwritten. Run from the repository root: python3 ci/saqr_actions/fetch_results.py
+and nothing is overwritten. Usage: python3 ci/saqr_actions/fetch_results.py [results-branch]
 """
 import io
+import sys
 import json
 import subprocess
 import tarfile
@@ -15,7 +16,8 @@ KEYS = ('aggregate', 'qos', 'chr', 'saqr', 'binary_sha256', 'config_sha256', 'tr
 
 
 def main():
-    subprocess.run(['git', 'fetch', '-q', 'origin', 'saqr-results'], cwd=ROOT, check=True)
+    branch = sys.argv[1] if len(sys.argv) > 1 else 'saqr-results'
+    subprocess.run(['git', 'fetch', '-q', 'origin', branch], cwd=ROOT, check=True)
     data = subprocess.run(['git', 'archive', 'FETCH_HEAD', 'results', 'ci_status'], cwd=ROOT, check=True, capture_output=True).stdout
     new = same = differ = 0; diffs = []
     with tarfile.open(fileobj=io.BytesIO(data)) as tar:
@@ -24,7 +26,7 @@ def main():
                 continue
             b = tar.extractfile(m).read()
             if m.name.startswith('ci_status/'):
-                dst = ROOT / 'results' / 'saqr_study' / 'actions_status' / m.name[len('ci_status/'):]
+                dst = ROOT / 'results' / 'saqr_study' / ('actions_status' if branch == 'saqr-results' else f'actions_status_{branch}') / m.name[len('ci_status/'):]
                 dst.parent.mkdir(parents=True, exist_ok=True); dst.write_bytes(b); continue
             dst = ROOT / m.name
             if dst.exists():

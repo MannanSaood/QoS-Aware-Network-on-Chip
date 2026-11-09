@@ -16,17 +16,19 @@ module saqr_h_classifier_tb;
         fd = $fopen(path, "r"); if (fd == 0) begin $display("FAIL: cannot open %s", path); $finish; end
         n = 0; bad = 0;
         repeat (3) @(posedge clk); rst_n = 1;
-        while (!$feof(fd)) begin
+        r = 2;
+        while (!$feof(fd) && r == 2) begin
             r = $fscanf(fd, "%d %d\n", d, e);
-            if (r != 2) break;
-            @(negedge clk); in_valid = 1; in_dest = d[9:0];
-            #1;
-            if (mark !== e[0]) begin
-                bad++;
-                if (bad <= 10) $display("MISMATCH vector %0d dest %0d: rtl %0b model %0d", n, d, mark, e);
+            if (r == 2) begin
+                @(negedge clk); in_valid = 1; in_dest = d[9:0];
+                #1;
+                if (mark !== e[0]) begin
+                    bad = bad + 1;
+                    if (bad <= 10) $display("MISMATCH vector %0d dest %0d: rtl %0b model %0d", n, d, mark, e);
+                end
+                n = n + 1;
+                @(posedge clk);
             end
-            n++;
-            @(posedge clk);
         end
         @(negedge clk); in_valid = 0;
         if (bad == 0 && n > 0) $display("PASS: %0d vectors, HOT_EN=%0d", n, HOT_EN);

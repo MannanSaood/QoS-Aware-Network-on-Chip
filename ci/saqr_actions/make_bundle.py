@@ -32,10 +32,14 @@ FILES = [
     'scripts/saqr_hot_common.py', 'scripts/saqr_h_study.py', 'scripts/setup_saqr_hot.py',
     'algorithms/saqr_hot/routing.hpp', 'simulators/booksim_saqr_hot/saqr_routes.cpp', 'tests/saqr_hot_test.cpp',
     '.deps/booksim2_saqr_hot/src/booksim',
+    # G5 (§21): comparator build, unseen patterns, study definition and evaluator
+    'scripts/traffic_ext.py', 'scripts/saqr_g5_study.py', 'scripts/evaluate_saqr_g5.py', 'scripts/setup_saqr_x.py',
+    'algorithms/dbar/routing.hpp', 'algorithms/footprint/routing.hpp', 'simulators/booksim_saqr_x/saqr_routes.cpp',
+    '.deps/booksim2_saqr_x/src/booksim',
 ]
 # Stage protocol files, included once they exist (pilot protocol, pilot selection, G5 protocol).
 OPTIONAL = ['results/saqr_study/hot/pilot/protocol.json', 'results/saqr_study/hot/pilot/selection.json',
-            'results/saqr_study/hot/g5/protocol.json']
+            'results/saqr_study/hot/g5/protocol.json', 'results/saqr_study/g5/protocol.json']
 
 
 def main():

@@ -1034,3 +1034,73 @@ The variant grid, the pilot cases and the selection rule are in the docstring of
 - **Choice:** the fewest hotspot points with lower bound ≤ −3% vs the best comparator; ties go to h11.
 - **Held-out G5:** seeds 301–305, the full G4 design (k = 4–32, six traffic cases, 9 loads, both modes). Routes: the six comparators, `saqr_sc` and `saqr_h`.
 - **Scoring:** the unchanged `scripts/evaluate_saqr_g4.py`.
+
+### 20.5 Tuning-pilot result and selection (9 November 2026)
+
+The pilot ran on GitHub Actions: 1782 runs, 0 failures. Its gate passed 86 of 86, including the new check that the SAQR-H binary with the tracker off equals SAQR-SC on every reference run. Inside the pilot, h_off equals saqr_sc on every point. Seeds 101–103 only. `results/saqr_study/hot/pilot/selection.json`:
+
+| Variant | Uniform/bursty rule (worst lb vs XY) | Hotspot points ≤ −3% vs best | Mean hotspot throughput | Adaptive: uniform k8 / hotspot k8 / hotspot k16 |
+|---|---|---:|---:|---|
+| saqr_sc (reference) | pass (0.0%) | 10 / 30 | 0.03911 | 0% / 0% / 0% |
+| h11 | **fail** (−4.0%) | 2 / 30 | 0.03992 | 6.6% / 96% / 88% |
+| **h13** | **pass (−2.45%)** | **1 / 30** | 0.03991 | 3.2% / 93% / 83% |
+| h11s5 | **fail** (−4.4%) | 1 / 30 | 0.03990 | 4.5% / 97% / 87% |
+
+- **Selected:** h13, the only eligible variant. h11, the default design point, was excluded by the fixed uniform rule.
+- **Transpose:** unchanged vs SAQR-SC (+5 to +14% vs the best comparator).
+- **Remaining pilot weakness:** k16 hotspot_edge l5 vs TOPSIS (lb −4.05%).
+
+## 21. Fresh held-out G5 and the "near-SOTA" test (frozen 9 November 2026, before any G5 run)
+
+### 21.1 Purpose
+
+The G5 claim being tested is **best or tied-best**: at every operating point a candidate must be no worse than the best of a stronger comparator set, within the frozen G4 margins. The test uses traffic never used for design or tuning and fresh seeds. The criteria are in `scripts/evaluate_saqr_g5.py`, written and hashed before any G5 run:
+- **BT-T:** throughput lower bound > −3% vs the best comparator;
+- **BT-L:** critical p99 within max(10%, 5 cycles) of the best comparator where it is not saturated;
+- **XY:** never worse than XY;
+- **S:** safety.
+
+Strict wins (> +3%) are reported.
+
+### 21.2 New comparators (`algorithms/dbar`, `algorithms/footprint`)
+
+Both use the Duato framework of the study's Duato comparator: an XY escape VC (offset 0) and an adaptive VC (offset 1). They are deadlock-free by Duato's condition, checked by `tests/comparators_test.cpp` (23,131,823 checks) and by a simulator invariant on every head flit.
+
+- **DBAR-style** (Ma, Enright Jerger and Wang, HPCA 2011): destination-truncated congestion summed along each candidate dimension. It is **idealized in DBAR's favour**: every router's previous-cycle occupancy is read with zero propagation delay.
+- **Footprint-style** (Fu and Kim, HPCA 2017): with a free adaptive VC, it selects as Duato does. When congested, it follows the port whose adaptive VC holds a packet to the same destination.
+
+The comparator binary (`simulators/booksim_saqr_x`, sha `94193fe2…`) was built on GitHub Actions from the byte-exact frozen tree (`ci/saqr_actions/qos_tree.tar.gz`). On Actions:
+- all unit tests pass;
+- 30 of 30 equivalence and smoke checks pass (`results/saqr_study/x_build/`);
+- the new binary reproduces the frozen Duato, XY and SAQR-H runs bit for bit;
+- DBAR and Footprint run with zero integrity errors.
+
+The smoke runs show DBAR to be the strongest Duato-family route, e.g. 8×8 bit-complement 0.177 vs 0.159 for Duato.
+
+### 21.3 Unseen traffic (`scripts/traffic_ext.py`)
+
+Seven patterns: bitcomp, bitrev, shuffle, tornado, neighbor, multiflow (4 fixed destinations per source) and mixed (50% transpose partner, 50% uniform).
+
+The last two are adversarial for the classifiers:
+- **multiflow** cycles through 4 destinations (the history depth);
+- **mixed** gives only a 50% repeat share.
+
+### 21.4 Matrix
+
+- Seeds 301–305; meshes 4, 8, 16, 32; 13 traffic patterns; frozen 9-point grids; weighted mode.
+- 10 routes: xy, oefixed, dyad, topsis, duato, westfirst, dbar, footprint, saqr_sc, saqr_h (h13).
+- **23,400 runs.** Protocol: `results/saqr_study/g5/protocol.json`, which hashes all four binaries, the sources, the evaluator and the pilot selection.
+- Runs on GitHub Actions (stage `g5`, results branch `saqr-results-g5`).
+
+### 21.5 Hardware cost (Yosys 0.33 on GitHub Actions)
+
+Per network interface, k = 32 (10-bit ids), `rtl/saqr/saqr_h_classifier.sv`:
+
+| Block | Xilinx 7-series (synth_xilinx) | Generic 2-input gates (abc) |
+|---|---|---|
+| SAQR-SC classifier | 61 LUT, 57 FF, 7 CARRY4 | 264 cells |
+| **SAQR-H classifier** | **136 LUT, 83 FF, 22 CARRY4** | 605 cells |
+
+Two pieces are still open:
+- **Router reference:** Yosys 0.33 cannot parse the router's SystemVerilog interfaces, so a synthesized router reference is still missing. For scale, the router's input buffers alone hold 5 ports × 4 VCs × 8 flits.
+- **RTL equivalence:** the RTL-vs-C++ equivalence test (74,023 vectors per mode) is being rerun after an Icarus-compatibility fix to the testbench.
