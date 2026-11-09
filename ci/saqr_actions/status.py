@@ -14,16 +14,16 @@ import tarfile
 import time
 from pathlib import Path
 
-from common import jobs, verify_frozen, ROOT
+from common import ROOT, Stage
 
 
 def main():
     res, lanes = Path(sys.argv[1]), Path(sys.argv[2])
     gate = json.loads(Path(sys.argv[3]).read_text()) if len(sys.argv) > 3 and Path(sys.argv[3]).exists() else None
-    st = res / 'ci_status'; st.mkdir(parents=True, exist_ok=True)
-    gp, sp = verify_frozen()
-    done_local = json.loads((ROOT / 'ci_bundle' / 'done.json').read_text())
-    traces = json.loads((st / 'traces.json').read_text()) if (st / 'traces.json').exists() else {}
+    sd = res / 'ci_status'; sd.mkdir(parents=True, exist_ok=True)
+    st = Stage()
+    done_local = st.done()
+    traces = json.loads((sd / 'traces.json').read_text()) if (sd / 'traces.json').exists() else {}
     alerts = []; wave = dict(time=time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()), run_id=os.environ.get('GITHUB_RUN_ID'),
                              completed=0, failures=[], interrupted=0, not_started=0, trace_mismatch=[], lanes=0, lane_hours=[])
     if gate is not None:
@@ -52,44 +52,42 @@ def main():
         alerts.append(f"{len(wave['failures'])} run failures this wave (see waves.jsonl)")
     if wave['trace_mismatch']:
         alerts.append(f"trace mismatch vs earlier receipts: {wave['trace_mismatch'][:5]}")
-    (st / 'traces.json').write_text(json.dumps(traces, indent=0, sort_keys=True) + '\n')
-    with (st / 'waves.jsonl').open('a') as f:
+    (sd / 'traces.json').write_text(json.dumps(traces, indent=0, sort_keys=True) + '\n')
+    with (sd / 'waves.jsonl').open('a') as f:
         f.write(json.dumps(wave) + '\n')
 
-    # Progress table: frozen matrices, meshes 4..32, both stages.
-    waves = [json.loads(l) for l in (st / 'waves.jsonl').read_text().splitlines() if l.strip()]
+    # Progress table: the stage's frozen matrix, per mesh and route group.
+    waves = [json.loads(l) for l in (sd / 'waves.jsonl').read_text().splitlines() if l.strip()]
     rows = []; remaining = 0
-    for k in (4, 8, 16, 32):
-        for stage in ('g4', 'src'):
-            tot = loc = act = 0
-            for c, js in jobs(gp, sp, meshes=[k]):
-                for j in js:
-                    if j['stage'] != stage:
-                        continue
-                    tot += 1
-                    if j['dir'] in done_local:
-                        loc += 1
-                    elif (res / j['dir'] / 'result.json').exists():
-                        act += 1
+    meshes = [4, 8, 16, 32] if st.name == 'g4' else st.meshes()
+    label = {'g4': 'previous candidates + comparators', 'src': 'SAQR-SC'}
+    for k in meshes:
+        groups = {}
+        for c, js in st.jobs(meshes=[k]):
+            for j in js:
+                g = groups.setdefault(j['stage'], [0, 0, 0]); g[0] += 1
+                if j['dir'] in done_local: g[1] += 1
+                elif (res / j['dir'] / 'result.json').exists(): g[2] += 1
+        for name, (tot, loc, act) in groups.items():
             remaining += tot - loc - act
-            rows.append(f"| {k}x{k} | {'previous candidates + comparators' if stage == 'g4' else 'SAQR-SC'} | {tot} | {loc} | {act} | {tot-loc-act} | {100*(loc+act)/tot:.1f}% |")
+            rows.append(f"| {k}x{k} | {label.get(name, name)} | {tot} | {loc} | {act} | {tot-loc-act} | {100*(loc+act)/tot:.1f}% |")
     recent = [w['completed'] for w in waves[-3:] if w.get('lanes')]
     rate = sum(recent) / len(recent) if recent else 0
     eta = f"about {remaining/rate:.1f} more waves (~{6*remaining/rate:.0f} h at one wave per 6 h)" if rate else 'unknown until a wave completes'
-    lines = ['# SAQR held-out on GitHub Actions: status', '',
+    lines = [f'# SAQR study on GitHub Actions: stage {st.name}', '',
              f"Last check: {wave['time']} (run {wave['run_id']}). Frozen binaries and protocols re-verified by hash in every job.", '',
              f"**Alerts:** {'; '.join(alerts) if alerts else 'none'}", '',
              '| mesh | stage | runs | done locally | done on Actions | remaining | complete |', '|---|---|---:|---:|---:|---:|---:|', *rows, '',
              f'Remaining runs: {remaining}. Throughput (last waves): {rate:.0f} runs/wave. ETA: {eta}.', '',
              '| wave (UTC) | gate | lanes | completed | failed | interrupted (rerun) | not started |', '|---|---|---:|---:|---:|---:|---:|']
     lines += [f"| {w['time']} | {w.get('gate', '-')} | {w['lanes']} | {w['completed']} | {len(w['failures'])} | {w['interrupted']} | {w['not_started']} |" for w in waves[-12:]]
-    (st / 'STATUS.md').write_text('\n'.join(lines) + '\n')
+    (sd / 'STATUS.md').write_text('\n'.join(lines) + '\n')
     if remaining == 0:
-        (st / 'COMPLETE').write_text(wave['time'] + '\n')
+        (sd / 'COMPLETE').write_text(wave['time'] + '\n')
     if alerts:
-        (st / 'ALERT').write_text('\n'.join(alerts) + '\n')
-    elif (st / 'ALERT').exists():
-        (st / 'ALERT').unlink()
+        (sd / 'ALERT').write_text('\n'.join(alerts) + '\n')
+    elif (sd / 'ALERT').exists():
+        (sd / 'ALERT').unlink()
     print('\n'.join(lines[:8 + len(rows)]))
 
 

@@ -1,7 +1,7 @@
 """One Actions lane of a wave: run this lane's share of the remaining frozen held-out runs.
 
-Remaining = every run of both frozen matrices (meshes 8, 16, 32) minus runs completed
-locally (bundle done.json) minus runs already committed to the results branch.
+Remaining = every run of the stage's frozen matrix (common.Stage; SAQR_STAGE env) minus runs
+completed locally (bundle done.json, g4 only) minus runs already committed to the results branch.
 Cases (all 18 runs of one trace) are dealt to lanes round-robin: smaller meshes first,
 longest loads first within a mesh.
 Runs use the unchanged chr_common.run with exactly the runners' arguments.
@@ -20,7 +20,7 @@ import time
 import traceback
 from pathlib import Path
 
-from common import ROOT, demand_path, jobs, verify_frozen
+from common import ROOT, Stage
 from chr_common import run, sha, trace
 
 
@@ -34,15 +34,15 @@ def main():
     p.add_argument('--out', required=True)
     a = p.parse_args()
     t0 = time.time(); out = Path(a.out); out.mkdir(parents=True, exist_ok=True)
-    gp, sp = verify_frozen()
-    done_local = json.loads((ROOT / 'ci_bundle' / 'done.json').read_text())
+    st = Stage()
+    done_local = st.done()
     committed = {l.strip()[:-len('/result.json')] for l in Path(a.committed).read_text().splitlines() if l.strip().endswith('/result.json')}
     known = json.loads(Path(a.traces).read_text()) if Path(a.traces).exists() else {}
     for d, s in done_local.items():                 # trace shas of local receipts, by case
         known.setdefault(Path(d).parent.name, s)
 
     todo = []
-    for c, js in jobs(gp, sp):
+    for c, js in st.jobs():
         rest = [j for j in js if j['dir'] not in done_local and j['dir'] not in committed]
         if rest:
             todo.append((c, rest))
@@ -83,7 +83,7 @@ def main():
     for c, rest in mine:
         if time.time() - t0 > a.launch_hours * 3600 or stop.is_set():
             rep['not_started'] += len(rest); continue
-        demand = demand_path(c); demand.parent.mkdir(parents=True, exist_ok=True)
+        demand = st.demand(c); demand.parent.mkdir(parents=True, exist_ok=True)
         if not demand.exists():
             trace(demand.parent / 'demand.tmp', c['k'], c['load'], c['seed'], c['traffic']); (demand.parent / 'demand.tmp').replace(demand)
         s = sha(demand); rep['traces'][c['name']] = s

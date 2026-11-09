@@ -1,4 +1,5 @@
-# SAQR held-out matrices (docs/SAQR_SPEC_V2.md §18-19) on GitHub Actions, one wave every 6 hours.
+# SAQR study matrices (docs/SAQR_SPEC_V2.md §18-20) on GitHub Actions, one wave every 6 hours.
+# Stage: workflow input, else ci/saqr_actions/ACTIVE_STAGE on the code branch (g4 | hpilot | g5).
 # Each wave: verify the frozen bundle -> (first time) reproduction gate -> N lanes -> merge + status check.
 # Results accumulate on the `saqr-results` branch; ci_status/STATUS.md is the 6-hourly report.
 # A wave that finds failures, trace mismatches or a failed gate still saves its results, then fails
@@ -13,6 +14,9 @@ on:
       lanes:
         description: 'parallel lanes'
         default: '10'
+      stage:
+        description: 'g4 | hpilot | g5 (empty = ci/saqr_actions/ACTIVE_STAGE on the code branch)'
+        default: ''
 
 permissions:
   contents: write
@@ -23,7 +27,6 @@ concurrency:
 
 env:
   CODE_REF: codex/hybrid-routing-research
-  RESULTS_REF: saqr-results
   PY: /usr/bin/python3 -s
 
 jobs:
@@ -33,11 +36,18 @@ jobs:
       complete: ${{ steps.s.outputs.complete }}
       gate_needed: ${{ steps.s.outputs.gate_needed }}
       lanes: ${{ steps.s.outputs.lanes }}
+      stage: ${{ steps.st.outputs.stage }}
+      results_ref: ${{ steps.st.outputs.results_ref }}
     steps:
       - uses: actions/checkout@v4
         with: { ref: '${{ env.CODE_REF }}', sparse-checkout: ci/saqr_actions, lfs: false }
+      - id: st
+        run: |
+          s="${{ github.event.inputs.stage }}"; s="${s:-$(cat ci/saqr_actions/ACTIVE_STAGE 2>/dev/null || echo g4)}"; s=$(echo $s | tr -d '[:space:]')
+          case "$s" in g4) r=saqr-results;; hpilot|g5) r="saqr-results-$s";; *) echo "unknown stage $s"; exit 1;; esac
+          echo "stage=$s" >> "$GITHUB_OUTPUT"; echo "results_ref=$r" >> "$GITHUB_OUTPUT"; echo "stage $s -> $r"
       - uses: actions/checkout@v4
-        with: { ref: '${{ env.RESULTS_REF }}', path: res, sparse-checkout: ci_status }
+        with: { ref: '${{ steps.st.outputs.results_ref }}', path: res, sparse-checkout: ci_status }
       - id: s
         run: |
           n="${{ github.event.inputs.lanes }}"; n="${n:-10}"
@@ -66,6 +76,9 @@ jobs:
     if: always() && needs.prepare.outputs.complete != 'true' && (needs.gate.result == 'success' || needs.gate.result == 'skipped')
     runs-on: ubuntu-24.04
     timeout-minutes: 350
+    env:
+      SAQR_STAGE: ${{ needs.prepare.outputs.stage }}
+      RESULTS_REF: ${{ needs.prepare.outputs.results_ref }}
     strategy:
       fail-fast: false
       matrix:
@@ -89,11 +102,14 @@ jobs:
     needs: [prepare, gate, lanes]
     if: always() && needs.prepare.outputs.complete != 'true'
     runs-on: ubuntu-24.04
+    env:
+      SAQR_STAGE: ${{ needs.prepare.outputs.stage }}
+      RESULTS_REF: ${{ needs.prepare.outputs.results_ref }}
     steps:
       - uses: actions/checkout@v4
         with: { ref: '${{ env.CODE_REF }}' }
       - uses: actions/checkout@v4
-        with: { ref: '${{ env.RESULTS_REF }}', path: res }
+        with: { ref: '${{ needs.prepare.outputs.results_ref }}', path: res }
       - run: sudo apt-get update -q && sudo apt-get install -y -q python3-numpy && tar xzf ci/saqr_actions/bundle.tar.gz
       - uses: actions/download-artifact@v4
         with: { pattern: 'lane-*', path: lanes }

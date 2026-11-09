@@ -1,11 +1,17 @@
-"""Shared helpers for running the frozen SAQR held-out matrices on GitHub Actions.
+"""Shared helpers for running frozen SAQR study matrices on GitHub Actions.
 
-Nothing here changes the frozen protocols. The runners' own scripts, binaries and
-receipts are shipped byte-exact in bundle.tar.gz (git line-ending conversion
-would otherwise change hashed sources) and every job re-verifies them by
-recomputing both protocols and comparing them with the frozen protocol files.
+Stages (env SAQR_STAGE):
+  g4      the G4 + SAQR-SC held-out (seeds 201-205; complete)
+  hpilot  SAQR-H tuning pilot (seeds 101-103; scripts/saqr_h_study.py)
+  g5      fresh held-out for saqr_sc and saqr_h (seeds 301-305; scripts/saqr_h_study.py)
+
+Nothing here changes a frozen protocol. Scripts, binaries and receipts ship
+byte-exact in bundle.tar.gz (git line-ending conversion would change hashed
+sources) and every job recomputes the stage's protocol and requires it to equal
+the frozen protocol file.
 """
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -20,15 +26,20 @@ from saqr_src_common import SRC_BINARY  # noqa: E402
 
 NUMPY_VERSION = '1.26.4'      # version that generated every local trace (Ubuntu 24.04 python3-numpy)
 PYTHON_PREFIX = '3.12.'
-MESHES = [8, 16, 32]          # k = 4 is complete locally for both stages
+STAGE = os.environ.get('SAQR_STAGE', 'g4')
+MESHES = [8, 16, 32]          # g4: k = 4 is complete locally for both stages
 
 
-def verify_frozen():
-    """Recompute both protocols from the files on disk; they must equal the frozen ones."""
+def _platform():
     import numpy
     import platform
     assert numpy.__version__ == NUMPY_VERSION, f'numpy {numpy.__version__} != {NUMPY_VERSION}'
     assert platform.python_version().startswith(PYTHON_PREFIX), platform.python_version()
+
+
+def verify_frozen():
+    """Recompute the G4 and SAQR-SC protocols from the files on disk; they must equal the frozen ones."""
+    _platform()
     gp = json.loads((g4.OUT / 'protocol.json').read_text())
     assert g4.protocol() == gp, 'G4 protocol mismatch (binary, sources or receipts differ from the frozen ones)'
     sp = json.loads((sg4.OUT / 'protocol_src.json').read_text())
@@ -37,7 +48,7 @@ def verify_frozen():
 
 
 def jobs(gp, sp, meshes=MESHES):
-    """Every run of both frozen matrices for the given meshes, grouped by case."""
+    """G4 stage: every run of both frozen matrices for the given meshes, grouped by case."""
     out = []
     for c in gp['cases']:
         if c['k'] not in meshes:
@@ -55,3 +66,46 @@ def jobs(gp, sp, meshes=MESHES):
 
 def demand_path(c):
     return g4.OUT / 'cases' / c['name'] / 'demand.txt'
+
+
+class Stage:
+    """Uniform interface used by lane.py and status.py."""
+
+    def __init__(self, name=STAGE):
+        self.name = name
+        if name == 'g4':
+            self.gp, self.sp = verify_frozen()
+        else:
+            verify_frozen()                      # the bundle's frozen G4/SAQR-SC files must still be intact
+            import saqr_h_study as hs
+            self.hs = hs
+            d = hs.PILOT_DIR if name == 'hpilot' else hs.G5_DIR
+            want = hs.pilot_protocol() if name == 'hpilot' else hs.g5_protocol()
+            have = json.loads((d / 'protocol.json').read_text())
+            assert want == have, f'{name} protocol mismatch (binary, sources or design differ from the frozen ones)'
+            self.dir, self.proto = d, have
+
+    def done(self):
+        if self.name == 'g4':
+            return json.loads((ROOT / 'ci_bundle' / 'done.json').read_text())
+        return {}
+
+    def meshes(self):
+        return MESHES if self.name == 'g4' else self.proto['meshes']
+
+    def jobs(self, meshes=None):
+        meshes = meshes or self.meshes()
+        if self.name == 'g4':
+            return jobs(self.gp, self.sp, meshes)
+        out = []
+        for c in self.proto['cases']:
+            if c['k'] not in meshes:
+                continue
+            js = [dict(stage=r, mode=mode, name=r, alg=alg, env=env, binary=self.proto['binaries'][b],
+                       dir=str((self.dir / 'cases' / c['name'] / f'{mode}_{r}').relative_to(ROOT)))
+                  for mode in self.proto['modes'] for r, (alg, env, b) in self.proto['routes'].items()]
+            out.append((c, js))
+        return out
+
+    def demand(self, c):
+        return demand_path(c) if self.name == 'g4' else self.dir / 'cases' / c['name'] / 'demand.txt'

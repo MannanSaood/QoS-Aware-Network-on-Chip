@@ -28,7 +28,14 @@ FILES = [
     'results/saqr_study/r0/r0_receipt.json', 'results/saqr_study/g4/protocol.json',
     'results/saqr_study/src/r0/r0_receipt.json', 'results/saqr_study/src/pilot/selection.json',
     'results/saqr_study/src/g4/protocol_src.json',
+    # SAQR-H study (§20)
+    'scripts/saqr_hot_common.py', 'scripts/saqr_h_study.py', 'scripts/setup_saqr_hot.py',
+    'algorithms/saqr_hot/routing.hpp', 'simulators/booksim_saqr_hot/saqr_routes.cpp', 'tests/saqr_hot_test.cpp',
+    '.deps/booksim2_saqr_hot/src/booksim',
 ]
+# Stage protocol files, included once they exist (pilot protocol, pilot selection, G5 protocol).
+OPTIONAL = ['results/saqr_study/hot/pilot/protocol.json', 'results/saqr_study/hot/pilot/selection.json',
+            'results/saqr_study/hot/g5/protocol.json']
 
 
 def main():
@@ -72,7 +79,7 @@ def main():
                                   for n, (_, s) in trace_checks.items()])
     out = HERE / 'bundle.tar.gz'
     with tarfile.open(out, 'w:gz') as tar:
-        for f in FILES:
+        for f in FILES + [f for f in OPTIONAL if (ROOT / f).exists()]:
             tar.add(ROOT / f, arcname=f)
 
         def put(name, data):
