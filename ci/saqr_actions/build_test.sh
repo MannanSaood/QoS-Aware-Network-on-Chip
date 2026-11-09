@@ -30,12 +30,19 @@ done
 
 log "RTL equivalence (iverilog)"
 g++ -std=c++17 -O2 tests/rtl/saqr_h_vectors.cpp -o /tmp/ut/vec
+RTL_OK=1
 for h in 0 1; do
   /tmp/ut/vec $h /tmp/ut/vec$h.txt | tee -a "$OUT/build_test.log"
-  iverilog -g2012 -P saqr_h_classifier_tb.HOT_EN=$h -o /tmp/ut/tb$h rtl/saqr/saqr_h_classifier.sv tests/rtl/saqr_h_classifier_tb.sv
-  vvp /tmp/ut/tb$h +vectors=/tmp/ut/vec$h.txt | tee /tmp/ut/tb$h.log | tee -a "$OUT/build_test.log"
-  grep -q '^PASS' /tmp/ut/tb$h.log
+  if iverilog -g2012 -P saqr_h_classifier_tb.HOT_EN=$h -o /tmp/ut/tb$h rtl/saqr/saqr_h_classifier.sv tests/rtl/saqr_h_classifier_tb.sv > /tmp/ut/iv$h.log 2>&1; then
+    vvp /tmp/ut/tb$h +vectors=/tmp/ut/vec$h.txt 2>&1 | tee /tmp/ut/tb$h.log | tee -a "$OUT/build_test.log"
+    grep -q '^PASS' /tmp/ut/tb$h.log || RTL_OK=0
+  else
+    echo "iverilog compile failed (HOT_EN=$h):" | tee -a "$OUT/build_test.log"; tee -a "$OUT/build_test.log" < /tmp/ut/iv$h.log; RTL_OK=0
+  fi
 done
+echo "RTL equivalence: $([ $RTL_OK = 1 ] && echo PASS || echo FAIL)" | tee -a "$OUT/build_test.log"
 
 log "simulator equivalence + smoke"
-cd ci/saqr_actions && python3 -s x_smoke.py "$OUT/x_smoke.json" | tee -a "$OUT/build_test.log"
+(cd ci/saqr_actions && python3 -s x_smoke.py "$OUT/x_smoke.json") 2>&1 | tee -a "$OUT/build_test.log"
+grep -q '"status": "pass"' "$OUT/x_smoke.json"
+[ $RTL_OK = 1 ]

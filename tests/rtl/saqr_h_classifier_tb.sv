@@ -7,10 +7,11 @@ module saqr_h_classifier_tb;
     logic clk = 0, rst_n = 0, in_valid = 0;
     logic [9:0] in_dest = '0;
     logic mark;
-    saqr_h_classifier #(.DW(10), .HOT_EN(HOT_EN)) dut (.clk, .rst_n, .in_valid, .in_dest, .mark);
+    saqr_h_classifier #(.DW(10), .HOT_EN(HOT_EN)) dut (.clk(clk), .rst_n(rst_n), .in_valid(in_valid), .in_dest(in_dest), .mark(mark));
     always #5 clk = ~clk;
-    initial begin
-        string path; int fd, d, e, n, bad, r;
+    string path;
+    integer fd, d, e, n, bad, r;
+    initial begin : replay
         if (!$value$plusargs("vectors=%s", path)) begin $display("FAIL: no +vectors"); $finish; end
         fd = $fopen(path, "r"); if (fd == 0) begin $display("FAIL: cannot open %s", path); $finish; end
         n = 0; bad = 0;
