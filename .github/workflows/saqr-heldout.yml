@@ -1,5 +1,5 @@
 # SAQR study matrices (docs/SAQR_SPEC_V2.md §18-20) on GitHub Actions, one wave every 6 hours.
-# Stage: workflow input, else ci/saqr_actions/ACTIVE_STAGE on the code branch (g4 | hpilot | g5).
+# Stage: workflow input, else ci/saqr_actions/ACTIVE_STAGE on the code branch (g4 | hpilot | g5 | o1t).
 # Each wave: verify the frozen bundle -> (first time) reproduction gate -> N lanes -> merge + status check.
 # Results accumulate on the `saqr-results` branch; ci_status/STATUS.md is the 6-hourly report.
 # A wave that finds failures, trace mismatches or a failed gate still saves its results, then fails
@@ -15,14 +15,14 @@ on:
         description: 'parallel lanes'
         default: '10'
       stage:
-        description: 'g4 | hpilot | g5 (empty = ci/saqr_actions/ACTIVE_STAGE on the code branch)'
+        description: 'g4 | hpilot | g5 | o1t (empty = ci/saqr_actions/ACTIVE_STAGE on the code branch)'
         default: ''
 
 permissions:
   contents: write
 
-concurrency:
-  group: saqr-heldout
+concurrency:   # o1t waves run beside the main stage; every other wave shares one queue
+  group: ${{ github.event.inputs.stage == 'o1t' && 'saqr-heldout-o1t' || 'saqr-heldout' }}
   cancel-in-progress: false
 
 env:
@@ -44,7 +44,7 @@ jobs:
       - id: st
         run: |
           s="${{ github.event.inputs.stage }}"; s="${s:-$(cat ci/saqr_actions/ACTIVE_STAGE 2>/dev/null || echo g4)}"; s=$(echo $s | tr -d '[:space:]')
-          case "$s" in g4) r=saqr-results;; hpilot|g5) r="saqr-results-$s";; *) echo "unknown stage $s"; exit 1;; esac
+          case "$s" in g4) r=saqr-results;; hpilot|g5|o1t) r="saqr-results-$s";; *) echo "unknown stage $s"; exit 1;; esac
           echo "stage=$s" >> "$GITHUB_OUTPUT"; echo "results_ref=$r" >> "$GITHUB_OUTPUT"; echo "stage $s -> $r"
       - uses: actions/checkout@v4
         with: { ref: '${{ steps.st.outputs.results_ref }}', path: res, sparse-checkout: ci_status }
