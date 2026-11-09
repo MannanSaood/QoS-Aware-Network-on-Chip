@@ -2,7 +2,8 @@
 
 Remaining = every run of both frozen matrices (meshes 8, 16, 32) minus runs completed
 locally (bundle done.json) minus runs already committed to the results branch.
-Cases (all 18 runs of one trace) are dealt to lanes round-robin, longest first.
+Cases (all 18 runs of one trace) are dealt to lanes round-robin: smaller meshes first,
+longest loads first within a mesh.
 Runs use the unchanged chr_common.run with exactly the runners' arguments.
 
 Checkpointing: new runs start only before --launch-hours; at --stop-hours any run still
@@ -45,7 +46,8 @@ def main():
         rest = [j for j in js if j['dir'] not in done_local and j['dir'] not in committed]
         if rest:
             todo.append((c, rest))
-    todo.sort(key=lambda x: (-x[0]['k'], -x[0]['index'], x[0]['traffic'], x[0]['seed']))
+    # Smaller meshes first (16x16 finishes before 32x32 starts), longest loads first within a mesh.
+    todo.sort(key=lambda x: (x[0]['k'], -x[0]['index'], x[0]['traffic'], x[0]['seed']))
     mine = [x for i, x in enumerate(todo) if i % a.lanes == a.lane]
     print(f'lane {a.lane}/{a.lanes}: {len(todo)} cases remain overall, {len(mine)} here ({sum(len(r) for _, r in mine)} runs)', flush=True)
 
