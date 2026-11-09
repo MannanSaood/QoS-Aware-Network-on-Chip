@@ -1,0 +1,116 @@
+# SAQR held-out matrices (docs/SAQR_SPEC_V2.md §18-19) on GitHub Actions, one wave every 6 hours.
+# Each wave: verify the frozen bundle -> (first time) reproduction gate -> N lanes -> merge + status check.
+# Results accumulate on the `saqr-results` branch; ci_status/STATUS.md is the 6-hourly report.
+# A wave that finds failures, trace mismatches or a failed gate still saves its results, then fails
+# (so GitHub notifies). Lives on the default branch because scheduled workflows only run from there.
+name: SAQR held-out waves
+
+on:
+  schedule:
+    - cron: '17 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      lanes:
+        description: 'parallel lanes'
+        default: '10'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: saqr-heldout
+  cancel-in-progress: false
+
+env:
+  CODE_REF: codex/hybrid-routing-research
+  RESULTS_REF: saqr-results
+  PY: /usr/bin/python3 -s
+
+jobs:
+  prepare:
+    runs-on: ubuntu-24.04
+    outputs:
+      complete: ${{ steps.s.outputs.complete }}
+      gate_needed: ${{ steps.s.outputs.gate_needed }}
+      lanes: ${{ steps.s.outputs.lanes }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: '${{ env.CODE_REF }}', sparse-checkout: ci/saqr_actions, lfs: false }
+      - uses: actions/checkout@v4
+        with: { ref: '${{ env.RESULTS_REF }}', path: res, sparse-checkout: ci_status }
+      - id: s
+        run: |
+          n="${{ github.event.inputs.lanes }}"; n="${n:-10}"
+          echo "lanes=$(python3 -c "import json;print(json.dumps(list(range($n))))")" >> "$GITHUB_OUTPUT"
+          if [ -f res/ci_status/COMPLETE ]; then echo "complete=true" >> "$GITHUB_OUTPUT"; else echo "complete=false" >> "$GITHUB_OUTPUT"; fi
+          b=$(sha256sum ci/saqr_actions/bundle.tar.gz | cut -d' ' -f1)
+          if [ -f res/ci_status/gate.json ] && python3 -c "import json,sys;g=json.load(open('res/ci_status/gate.json'));sys.exit(0 if g['status']=='pass' and g['bundle_sha256']=='$b' else 1)"; then
+            echo "gate_needed=false" >> "$GITHUB_OUTPUT"; else echo "gate_needed=true" >> "$GITHUB_OUTPUT"; fi
+
+  gate:
+    needs: prepare
+    if: needs.prepare.outputs.complete != 'true' && needs.prepare.outputs.gate_needed == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: '${{ env.CODE_REF }}' }
+      - run: sudo apt-get update -q && sudo apt-get install -y -q python3-numpy && tar xzf ci/saqr_actions/bundle.tar.gz
+      - run: cd ci/saqr_actions && $PY gate.py "$GITHUB_WORKSPACE/gate.json"
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with: { name: gate, path: gate.json, if-no-files-found: ignore }
+
+  lanes:
+    needs: [prepare, gate]
+    if: always() && needs.prepare.outputs.complete != 'true' && (needs.gate.result == 'success' || needs.gate.result == 'skipped')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 350
+    strategy:
+      fail-fast: false
+      matrix:
+        lane: ${{ fromJSON(needs.prepare.outputs.lanes) }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: '${{ env.CODE_REF }}' }
+      - run: |
+          git fetch -q --depth=1 --filter=blob:none origin "$RESULTS_REF"
+          git ls-tree -r --name-only FETCH_HEAD > "$RUNNER_TEMP/committed.txt"
+          git show FETCH_HEAD:ci_status/traces.json > "$RUNNER_TEMP/traces.json" 2>/dev/null || echo '{}' > "$RUNNER_TEMP/traces.json"
+          sudo apt-get update -q && sudo apt-get install -y -q python3-numpy && tar xzf ci/saqr_actions/bundle.tar.gz
+      - run: |
+          cd ci/saqr_actions && $PY lane.py --lane ${{ matrix.lane }} --lanes ${{ strategy.job-total }} --jobs 4 \
+            --committed "$RUNNER_TEMP/committed.txt" --traces "$RUNNER_TEMP/traces.json" --out "$RUNNER_TEMP/out"
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with: { name: 'lane-${{ matrix.lane }}', path: '${{ runner.temp }}/out', if-no-files-found: ignore, retention-days: 14 }
+
+  merge:
+    needs: [prepare, gate, lanes]
+    if: always() && needs.prepare.outputs.complete != 'true'
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: '${{ env.CODE_REF }}' }
+      - uses: actions/checkout@v4
+        with: { ref: '${{ env.RESULTS_REF }}', path: res }
+      - run: sudo apt-get update -q && sudo apt-get install -y -q python3-numpy && tar xzf ci/saqr_actions/bundle.tar.gz
+      - uses: actions/download-artifact@v4
+        with: { pattern: 'lane-*', path: lanes }
+        continue-on-error: true
+      - uses: actions/download-artifact@v4
+        with: { name: gate, path: gatedir }
+        continue-on-error: true
+      - run: |
+          mkdir -p lanes
+          cd ci/saqr_actions && $PY status.py "$GITHUB_WORKSPACE/res" "$GITHUB_WORKSPACE/lanes" "$GITHUB_WORKSPACE/gatedir/gate.json"
+          cd "$GITHUB_WORKSPACE"
+          if [ -f gatedir/gate.json ]; then cp gatedir/gate.json res/ci_status/gate.json; fi
+          cat res/ci_status/STATUS.md >> "$GITHUB_STEP_SUMMARY"
+      - run: |
+          cd res && git config user.name "saqr-ci" && git config user.email "saqr-ci@users.noreply.github.com"
+          git add -A && (git diff --cached --quiet || git commit -q -m "wave ${GITHUB_RUN_ID}: $(grep -m1 'Remaining runs' ci_status/STATUS.md)")
+          git push -q origin "HEAD:$RESULTS_REF"
+      - name: Alert check
+        run: |
+          if [ -f res/ci_status/ALERT ]; then echo "::error::$(tr '\n' ' ' < res/ci_status/ALERT)"; exit 1; fi
