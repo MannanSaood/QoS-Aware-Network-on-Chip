@@ -1105,3 +1105,55 @@ Two pieces are still open:
 - **Router reference:** Yosys 0.33 cannot parse the router's SystemVerilog interfaces, so a synthesized router reference is still missing. For scale, the router's input buffers alone hold 5 ports × 4 VCs × 8 flits.
 - **RTL equivalence:** passes on Actions (Icarus Verilog). 74,023 of 74,023 vectors match the C++ model with the tracker on, and 74,023 of 74,023 with it off. The vectors mix uniform, hotspot, fixed-destination, flow-set and adversarial phases.
 - **Build reproducibility:** the GitHub build reproduces the frozen comparator binary bit for bit (sha `94193fe2…`).
+
+### 21.6 G5 verdict (10 November 2026): best-or-tied FAILS
+
+All 23,400 runs completed on Actions (2 waves, 0 failed runs, 0 integrity errors, gate 86/86). Scored with the frozen `scripts/evaluate_saqr_g5.py`; full tables in `G5_VERDICT.md` on branch `saqr-results-g5`.
+
+| Criterion (468 points per candidate) | saqr_sc | saqr_h |
+|---|---:|---:|
+| BT-T: throughput tied-or-better vs best of 8 | 389 | **399 (85 %)** |
+| strict wins (> +3 % over the best of 8) | 21 | 21 |
+| BT-L: critical p99 vs best (unsaturated points) | 467/468 | **468/468** |
+| XY: never worse than XY | 414 | 414 |
+| Safety | pass | pass |
+
+The pre-registered claim ("best or tied at every point") is **not met**. It is recorded as an adverse result.
+
+Where it fails:
+- **XY beats every adaptive route on bitcomp, tornado and multiflow** (and on mixed at k ≥ 8). saqr_h's throughput at the top load is −9 to −11 % on bitcomp, −10 to −28 % on tornado and up to −16 % on multiflow, all against XY.
+  - The classifier marks these permutations adaptive, like transpose and bitrev, because every permutation repeats destinations. saqr_all (every packet adaptive) is within ties of saqr_h there, so the loss belongs to the soft-O1TURN route set and not to the tracker.
+  - Classic O1TURN beats saqr_h on tornado at k32 and on mixed. The likely cost is the route set's restriction of YX hops to VC 1.
+- **DBAR:** 10 losses (mixed 9, hotspot_corner 1).
+- **Footprint:** 0 losses.
+
+Where it wins:
+- Transpose: +14 to +29 % over XY at the top load.
+- Bitrev: +22 to +48 % over XY at the top load.
+- Strict wins over every comparator on both patterns, growing with mesh size.
+- p99 never worse than the best comparator at any unsaturated point.
+
+Win / tie / loss of saqr_h per comparator, out of 468 points:
+
+| | xy | oefixed | dyad | topsis | duato | westfirst | dbar | footprint | o1turn |
+|---|---|---|---|---|---|---|---|---|---|
+| W / T / L | 59/355/47 | 145/309/8 | 131/328/3 | 130/326/4 | 104/352/5 | 137/326/3 | 79/374/10 | 104/364/0 | 95/333/34 |
+
+- W: lower bound > +3 %. T: lower bound > −3 %. L: upper bound < −3 %. The remaining points are inconclusive.
+
+### 21.7 O1TURN extension (stage `o1t`, frozen before its runs)
+
+Routes: classic O1TURN, and saqr_all (the SAQR-SC classifier forced on). They ran on the G5 cases: 4,680 runs, 0 failures, 0 integrity errors. Scored with the frozen `scripts/evaluate_saqr_o1t.py`; tables in `O1T_VERDICT.md` on branch `saqr-results-o1t`.
+
+| saqr_h vs | throughput tied-or-better | strict wins |
+|---|---:|---:|
+| o1turn | 424/468 | 95 |
+| saqr_all | 450/468 (A-T) | 20 |
+| best of 9 (B9-T) | 399/468 | 21 |
+
+- Critical p99 vs O1TURN: 462/462 for saqr_sc. Read the saqr_h value from `O1T_VERDICT.md`; it was not copied here.
+- **Answer to "is it just O1TURN?":** no. saqr_h beats O1TURN outright at 95 points (uniform, bursty, transpose, bitrev, shuffle, hotspots) because it keeps XY where O1TURN splits needlessly.
+- But O1TURN is not dominated: it wins 34 points (bitcomp, tornado, mixed, multiflow).
+- The classifier itself adds little beyond the hotspot tracker: saqr_h vs saqr_all is 20 W / 3 L.
+
+**Status:** the G5 seeds (301–305) are now spent. Any revised candidate must first be designed and tuned on other data, then frozen and tested on a fresh held-out seed set.
