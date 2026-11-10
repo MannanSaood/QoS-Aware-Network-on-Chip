@@ -26,9 +26,16 @@ cp .deps/booksim2_saqr_x/src/booksim "$OUT/booksim_saqr_x"
 cp .deps/booksim2_saqr_x/build_manifest.json "$OUT/build_manifest_saqr_x.json"
 sha256sum "$OUT/booksim_saqr_x" | tee -a "$OUT/build_test.log"
 
+log "build SAQR-C binary"
+python3 -s scripts/setup_saqr_c.py --jobs 4 > "$OUT/setup_saqr_c.log" 2>&1 || { tail -40 "$OUT/setup_saqr_c.log"; exit 1; }
+tail -6 "$OUT/setup_saqr_c.log" | tee -a "$OUT/build_test.log"
+cp .deps/booksim2_saqr_c/src/booksim "$OUT/booksim_saqr_c"
+cp .deps/booksim2_saqr_c/build_manifest.json "$OUT/build_manifest_saqr_c.json"
+sha256sum "$OUT/booksim_saqr_c" | tee -a "$OUT/build_test.log"
+
 log "unit tests"
 mkdir -p /tmp/ut
-for t in chr_test saqr_test saqr_src_test saqr_hot_test comparators_test saqr_deadlock_check; do
+for t in chr_test saqr_test saqr_src_test saqr_hot_test comparators_test saqr_col_test saqr_deadlock_check; do
   g++ -std=c++17 -O2 -Wall tests/$t.cpp -o /tmp/ut/$t
   /tmp/ut/$t | tail -2 | tee -a "$OUT/build_test.log"
 done
@@ -50,4 +57,8 @@ echo "RTL equivalence: $([ $RTL_OK = 1 ] && echo PASS || echo FAIL)" | tee -a "$
 log "simulator equivalence + smoke"
 (cd ci/saqr_actions && python3 -s x_smoke.py "$OUT/x_smoke.json") 2>&1 | tee -a "$OUT/build_test.log"
 grep -q '"status": "pass"' "$OUT/x_smoke.json"
+
+log "SAQR-C equivalence + smoke"
+(cd ci/saqr_actions && python3 -s c_smoke.py "$OUT/c_smoke.json") 2>&1 | tee -a "$OUT/build_test.log"
+grep -q '"status": "pass"' "$OUT/c_smoke.json"
 [ $RTL_OK = 1 ]
