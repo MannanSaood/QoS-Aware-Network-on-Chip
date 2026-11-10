@@ -1157,3 +1157,61 @@ Routes: classic O1TURN, and saqr_all (the SAQR-SC classifier forced on). They ra
 - The classifier itself adds little beyond the hotspot tracker: saqr_h vs saqr_all is 20 W / 3 L.
 
 **Status:** the G5 seeds (301–305) are now spent. Any revised candidate must first be designed and tuned on other data, then frozen and tested on a fresh held-out seed set.
+
+## 22. SAQR-C: the turn-column convergence cue (designed 10 November 2026, after §21.6)
+
+### 22.1 Diagnosis (from G5, now design data)
+
+- **The losses come from the cue.** Every G5 loss to XY is on a pattern where SAQR's repeat cue fires: bitcomp, tornado, multiflow and the transpose half of mixed. Each source there repeats one or a few destinations, so SAQR-SC marks it adaptive.
+- **Adaptivity only pays when XY concentrates load.** That happens when many sources of a row turn into the same column: transpose, and bit reversal, where the destination column is a function of the source row. When row-mates turn at different columns (bitcomp, tornado, random flows), XY already meets the bisection bound and the adaptive route set only costs VC capacity.
+- **Fully adaptive comparators do no better.** Duato, DBAR and Footprint all lose to XY on those patterns too.
+- **A perfect cue would reach about 95 %.** An oracle choosing per point between XY and saqr_h would have been tied-best at 446 of 468 G5 points, with no loss to XY (means, approximate).
+
+### 22.2 Mechanism (`algorithms/saqr_col/routing.hpp`)
+
+Each router keeps a convergence tracker over the transit head flits that pass through it and still have X distance to cover:
+- one candidate-column register;
+- a 12-bit EWMA share f, updated per observed flit with weight 2^-5;
+- candidate replacement when f < floor;
+- an on/off hysteresis bit.
+
+A packet injected at that router is adaptive (soft-O1TURN set) iff the router is converging, the packet's destination column equals the convergent column, and that column differs from the source column. Otherwise the packet takes exact XY.
+
+Mode 1 also marks hotspot-like sources: the SAQR-H tracker bit is set while the SAQR-SC repeat bit is clear.
+
+**Cost and safety:**
+- Per router: one column register (log2 k bits), 12-bit share, compare logic. No new wires.
+- The route sets are the SAQR-SC sets, so the §9 deadlock argument is unchanged.
+- The runtime CTY invariant stays on.
+
+### 22.3 Build and checks (GitHub Actions run 42789139411)
+
+- **Binary:** `.deps/booksim2_saqr_c`, sha `da8fdf6f…`. The same job reproduced the comparator binary bit for bit (`94193fe2…`).
+- **Unit tests:** `tests/saqr_col_test.cpp` passes 9,600,801 checks against an independent reference model, plus the full earlier suite.
+- **Equivalence:** with the cue unset, the binary reproduces the comparator binary exactly on saqr_h, xy and dbar.
+- **Smoke** (seed 101): share of packets marked adaptive by c50:
+
+| Pattern | c50 |
+|---|---:|
+| transpose | 0.67–0.72 |
+| bitcomp | 0.00 |
+| tornado | 0.00 |
+| uniform | 0.03 |
+| mixed | 0.20 |
+| hotspot_edge | 0.02 (0.91 with mode 1) |
+
+### 22.4 Pilot (frozen before it ran: `scripts/saqr_c_study.py`)
+
+- **Data:** G5 seeds 301–302; all 13 patterns; meshes 4–32; load indices 3–8.
+- **Variants:** c50, c25, c50h, c25h. That is 624 cases × 4 = 2,496 runs (stage `cpilot`).
+- **Reuse:** comparator receipts for the identical cases come from G5 and O1T.
+- **Selection rule:** the most points with throughput at least 0.97 × the best of 9 comparators; tie → fewest points below 0.97 × XY; tie → simplest variant.
+
+### 22.5 Fresh held-out G6 (defined before the pilot ran: `scripts/saqr_g6_study.py`, `scripts/evaluate_saqr_g6.py`)
+
+- **Seeds:** 401–405.
+- **Meshes:** 4–32.
+- **Traffic (15 patterns):** the 13 G5 patterns plus two never used for design (butterfly, random permutation; `scripts/traffic_g6.py`).
+- **Comparators (9):** G5's eight plus O1TURN.
+- **Candidates:** the selected saqr_c, plus saqr_h for reference.
+- **Criteria:** G5's, unchanged (BT-T, BT-L, XY, S), against the best of the nine comparators.
