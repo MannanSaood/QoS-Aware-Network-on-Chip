@@ -1147,11 +1147,11 @@ Routes: classic O1TURN, and saqr_all (the SAQR-SC classifier forced on). They ra
 
 | saqr_h vs | throughput tied-or-better | strict wins |
 |---|---:|---:|
-| o1turn | 424/468 | 95 |
-| saqr_all | 450/468 (A-T) | 20 |
+| o1turn | 428/468 | 95 |
+| saqr_all | 463/468 (A-T) | 20 |
 | best of 9 (B9-T) | 399/468 | 21 |
 
-- Critical p99 vs O1TURN: 462/462 for saqr_sc. Read the saqr_h value from `O1T_VERDICT.md`; it was not copied here.
+- Critical p99 vs O1TURN (unsaturated points): 462/462 for both saqr_sc and saqr_h.
 - **Answer to "is it just O1TURN?":** no. saqr_h beats O1TURN outright at 95 points (uniform, bursty, transpose, bitrev, shuffle, hotspots) because it keeps XY where O1TURN splits needlessly.
 - But O1TURN is not dominated: it wins 34 points (bitcomp, tornado, mixed, multiflow).
 - The classifier itself adds little beyond the hotspot tracker: saqr_h vs saqr_all is 20 W / 3 L.
