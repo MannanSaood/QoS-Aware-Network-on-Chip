@@ -8,6 +8,7 @@ Stages (env SAQR_STAGE):
   o1t     G5 extension: classic O1TURN + the saqr_all ablation on the G5 cases
           (scripts/saqr_o1t_study.py)
   cpilot  SAQR-C design pilot on G5 seeds 301-302 (scripts/saqr_c_study.py)
+  g6      fresh held-out: 9 comparators, saqr_c and saqr_h, 15 patterns, seeds 401-405 (scripts/saqr_g6_study.py)
 
 Nothing here changes a frozen protocol. Scripts, binaries and receipts ship
 byte-exact in bundle.tar.gz (git line-ending conversion would change hashed
@@ -86,11 +87,15 @@ class Stage:
             have = json.loads((d / 'protocol.json').read_text())
             assert want == have, f'{name} protocol mismatch (binary, sources or design differ from the frozen ones)'
             self.dir, self.proto = d, have
-        elif name in ('g5', 'o1t', 'cpilot'):
+        elif name in ('g5', 'o1t', 'cpilot', 'g6'):
             verify_frozen()
             import saqr_g5_study as gs
             self.gs = gs
-            if name == 'cpilot':
+            if name == 'g6':
+                import saqr_g6_study as g6
+                self.gs = g6
+                d, want = g6.G6_DIR, g6.protocol()
+            elif name == 'cpilot':
                 import saqr_c_study as cs
                 d, want = cs.PILOT_DIR, cs.pilot_protocol()
             elif name == 'o1t':
@@ -125,7 +130,7 @@ class Stage:
         return out
 
     def make_trace(self, path, c):
-        if self.name in ('g5', 'o1t', 'cpilot'):
+        if self.name in ('g5', 'o1t', 'cpilot', 'g6'):
             return self.gs.make_trace(path, c)
         from chr_common import trace
         return trace(path, c['k'], c['load'], c['seed'], c['traffic'])

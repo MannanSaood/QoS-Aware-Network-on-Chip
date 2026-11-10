@@ -41,11 +41,14 @@ FILES = [
     # SAQR-C (§22)
     'scripts/saqr_col_common.py', 'scripts/saqr_c_study.py', 'scripts/setup_saqr_c.py',
     'algorithms/saqr_col/routing.hpp', 'simulators/booksim_saqr_c/saqr_routes.cpp', '.deps/booksim2_saqr_c/src/booksim',
+    # G6 (§22.5)
+    'scripts/traffic_g6.py', 'scripts/saqr_g6_study.py', 'scripts/evaluate_saqr_g6.py',
 ]
 # Stage protocol files, included once they exist (pilot protocol, pilot selection, G5 protocol).
 OPTIONAL = ['results/saqr_study/hot/pilot/protocol.json', 'results/saqr_study/hot/pilot/selection.json',
             'results/saqr_study/hot/g5/protocol.json', 'results/saqr_study/g5/protocol.json',
-            'results/saqr_study/g5_o1t/protocol.json', 'results/saqr_study/col/pilot/protocol.json']
+            'results/saqr_study/g5_o1t/protocol.json', 'results/saqr_study/col/pilot/protocol.json',
+            'results/saqr_study/col/pilot/selection.json', 'results/saqr_study/g6/protocol.json']
 
 
 def main():
