@@ -24,18 +24,16 @@
 #define MAXF 32
 
 int main(int argc, char** argv) {
-    if (argc < 6) { fprintf(stderr, "usage: convert trace out_prefix start_permille F keep1 [keep2 ...]
-"); return 2; }
+    if (argc < 6) { fprintf(stderr, "usage: convert trace out_prefix start_permille F keep1 [keep2 ...]\n"); return 2; }
     const unsigned long long F = strtoull(argv[4], NULL, 10);
     int nq = argc - 5;
-    if (F < 1 || nq > MAXF) { fprintf(stderr, "bad arguments
-"); return 2; }
-    unsigned q[MAXF]; unsigned long long cnt[MAXF] = {0}, crit[MAXF] = {0};
+    if (F < 1 || nq > MAXF) { fprintf(stderr, "bad arguments\n"); return 2; }
+    unsigned q[MAXF];
+    unsigned long long cnt[MAXF] = {0}, crit[MAXF] = {0};
     FILE* out[MAXF];
     for (int i = 0; i < nq; ++i) {
         q[i] = (unsigned)strtoul(argv[5 + i], NULL, 10);
-        if (q[i] < 1 || q[i] > 1000) { fprintf(stderr, "keep must be 1..1000
-"); return 2; }
+        if (q[i] < 1 || q[i] > 1000) { fprintf(stderr, "keep must be 1..1000\n"); return 2; }
         char name[1024];
         snprintf(name, sizeof name, "%s_q%u.txt", argv[2], q[i]);
         out[i] = fopen(name, "w");
@@ -44,8 +42,7 @@ int main(int argc, char** argv) {
     nt_open_trfile(argv[1]);
     nt_disable_dependencies();
     nt_header_t* h = nt_get_trheader();
-    if (h->num_nodes != 64) { fprintf(stderr, "expected 64 nodes, got %d
-", h->num_nodes); return 1; }
+    if (h->num_nodes != 64) { fprintf(stderr, "expected 64 nodes, got %d\n", h->num_nodes); return 1; }
     nt_regionhead_t* roi = &h->regions[2];
     nt_seek_region(roi);
     unsigned long long start = 0, n = 0;
@@ -57,19 +54,16 @@ int main(int argc, char** argv) {
             unsigned long long t = (p->cycle - start) / F;
             if (t >= WINDOW) { nt_packet_free(p); break; }
             int size = nt_get_packet_size(p);
-            if (size != 8 && size != 72) { fprintf(stderr, "unexpected packet size %d (type %d)
-", size, p->type); return 1; }
+            if (size != 8 && size != 72) { fprintf(stderr, "unexpected packet size %d (type %d)\n", size, p->type); return 1; }
             int cls = size == 8 ? 0 : 1;
             unsigned bucket = (unsigned)(((unsigned long long)p->id * 2654435761ULL) % 1000ULL);
             for (int i = 0; i < nq; ++i)
-                if (bucket < q[i]) { fprintf(out[i], "%llu %u %u %d
-", t, p->src, p->dst, cls); ++cnt[i]; crit[i] += cls == 0; }
+                if (bucket < q[i]) { fprintf(out[i], "%llu %u %u %d\n", t, p->src, p->dst, cls); ++cnt[i]; crit[i] += cls == 0; }
         }
         nt_packet_free(p);
         if (n >= roi->num_packets) break;
     }
-    for (int i = 0; i < nq; ++i) { fclose(out[i]); printf("%u %llu %llu
-", q[i], cnt[i], crit[i]); }
+    for (int i = 0; i < nq; ++i) { fclose(out[i]); printf("%u %llu %llu\n", q[i], cnt[i], crit[i]); }
     nt_close_trfile();
     return 0;
 }
