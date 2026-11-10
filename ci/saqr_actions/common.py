@@ -8,6 +8,8 @@ Stages (env SAQR_STAGE):
   o1t     G5 extension: classic O1TURN + the saqr_all ablation on the G5 cases
           (scripts/saqr_o1t_study.py)
   cpilot  SAQR-C design pilot on G5 seeds 301-302 (scripts/saqr_c_study.py)
+  ctpilot SAQR-CT design pilot on seeds 301-302 (scripts/saqr_ct_study.py)
+  g7      fresh held-out for SAQR-CT (scripts/saqr_g7_study.py)
   g6      fresh held-out: 9 comparators, saqr_c and saqr_h, 15 patterns, seeds 401-405 (scripts/saqr_g6_study.py)
 
 Nothing here changes a frozen protocol. Scripts, binaries and receipts ship
@@ -87,11 +89,19 @@ class Stage:
             have = json.loads((d / 'protocol.json').read_text())
             assert want == have, f'{name} protocol mismatch (binary, sources or design differ from the frozen ones)'
             self.dir, self.proto = d, have
-        elif name in ('g5', 'o1t', 'cpilot', 'g6'):
+        elif name in ('g5', 'o1t', 'cpilot', 'g6', 'ctpilot', 'g7'):
             verify_frozen()
             import saqr_g5_study as gs
             self.gs = gs
-            if name == 'g6':
+            if name == 'g7':
+                import saqr_g7_study as g7
+                self.gs = g7
+                d, want = g7.G7_DIR, g7.protocol()
+            elif name == 'ctpilot':
+                import saqr_ct_study as ts
+                self.gs = ts
+                d, want = ts.PILOT_DIR, ts.pilot_protocol()
+            elif name == 'g6':
                 import saqr_g6_study as g6
                 self.gs = g6
                 d, want = g6.G6_DIR, g6.protocol()
@@ -120,17 +130,20 @@ class Stage:
         if self.name == 'g4':
             return jobs(self.gp, self.sp, meshes)
         out = []
+        groups = self.proto.get('groups') or [dict(cases=None, routes=self.proto['routes'])]
+        groups = [dict(g, cases=None if g['cases'] is None else set(g['cases'])) for g in groups]
         for c in self.proto['cases']:
             if c['k'] not in meshes:
                 continue
+            routes = {r: v for g in groups if g['cases'] is None or c['name'] in g['cases'] for r, v in g['routes'].items()}
             js = [dict(stage=r, mode=mode, name=r, alg=alg, env=env, binary=self.proto['binaries'][b],
                        dir=str((self.dir / 'cases' / c['name'] / f'{mode}_{r}').relative_to(ROOT)))
-                  for mode in self.proto['modes'] for r, (alg, env, b) in self.proto['routes'].items()]
+                  for mode in self.proto['modes'] for r, (alg, env, b) in routes.items()]
             out.append((c, js))
         return out
 
     def make_trace(self, path, c):
-        if self.name in ('g5', 'o1t', 'cpilot', 'g6'):
+        if self.name in ('g5', 'o1t', 'cpilot', 'g6', 'ctpilot', 'g7'):
             return self.gs.make_trace(path, c)
         from chr_common import trace
         return trace(path, c['k'], c['load'], c['seed'], c['traffic'])
