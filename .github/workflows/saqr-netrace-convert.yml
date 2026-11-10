@@ -1,0 +1,17 @@
+# Netrace conversion: downloads the Netrace library and three PARSEC traces on the runner (hash-
+# checked, never committed) and converts the region of interest into 8x8 demand traces.
+# The traces are kept as the `nt-traces` artifact for the held-out workflow (stage nt).
+name: Netrace convert
+on:
+  workflow_dispatch:
+jobs:
+  convert:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: codex/hybrid-routing-research, sparse-checkout: ci/netrace }
+      - run: OUT="$GITHUB_WORKSPACE/nt_out" bash ci/netrace/convert.sh
+      - run: cat nt_out/manifest.json >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with: { name: nt-traces, path: nt_out, retention-days: 90 }
