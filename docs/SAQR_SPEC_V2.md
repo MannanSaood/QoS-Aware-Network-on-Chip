@@ -1362,3 +1362,16 @@ The cause is edge and near-edge routers. They see little transit traffic on any 
 - SAQR-C behaves like XY. On x264 it misses 6 of 9 points, by up to −13 % against Odd-Even at 0.10 flits/node/cycle.
 - SAQR-H's hotspot tracker helps on this memory-controller and L2-centred traffic: it is tied or better at 21 of 27 points and has the lower p99 on fluidanimate and x264.
 - Most points above 0.1 flits/node/cycle are saturated: p99 runs to thousands of cycles for every route, because the traffic is bursty and concentrated.
+
+## 25. Final candidate (chosen 10 November 2026): SAQR-C (c25)
+
+SAQR-C has the largest fresh held-out evidence:
+- G6: tied-best at 479 of 540 points, never worse than XY (1 clear loss).
+- Wins at 32×32 on transpose and bit reversal.
+- Netrace (§24): competitive but not winning (19 of 27).
+
+The final figures show SAQR-C against the nine comparators only:
+- `docs/figures/g6_saqr_c/`: G6 seeds 401–405, 15 patterns, meshes 4–32, three metrics.
+- `docs/figures/nt_saqr_c/`: Netrace PARSEC traces, 8×8.
+
+SAQR-H and SAQR-CT remain documented as alternatives (§20, §22.6, §23.5).
