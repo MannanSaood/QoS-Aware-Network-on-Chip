@@ -1215,3 +1215,46 @@ Mode 1 also marks hotspot-like sources: the SAQR-H tracker bit is set while the 
 - **Comparators (9):** G5's eight plus O1TURN.
 - **Candidates:** the selected saqr_c, plus saqr_h for reference.
 - **Criteria:** G5's, unchanged (BT-T, BT-L, XY, S), against the best of the nine comparators.
+
+### 22.6 Pilot result and G6 verdict (10 November 2026)
+
+**Pilot (design data):** the fixed rule selected **c25**.
+
+| Variant | Tied-best (of 312) | Below 0.97 × XY |
+|---|---:|---:|
+| c25 | 278 | 2 |
+| c50 | 274 | 2 |
+| c50h | 271 | 21 |
+| c25h | 265 | 26 |
+| saqr_h | 248 | 51 |
+
+**G6 run:** 29,700 runs in one wave of 40 lanes; 0 failures, 0 integrity errors, gate 86/86. Scored by the frozen `scripts/evaluate_saqr_g6.py`; tables in `G6_VERDICT.md` on `saqr-results-g6`.
+
+| Criterion (540 points) | saqr_c | saqr_h |
+|---|---:|---:|
+| BT-T: tied-or-better vs best of 9 | **479 (88.7 %)** | 458 (84.8 %) |
+| strict wins (> +3 % over best of 9) | 16 | 29 |
+| BT-L: critical p99 vs best | 529 | 540 |
+| XY: never worse than XY | **528** | 474 |
+| Safety | pass | pass |
+
+The pre-registered "best or tied at every point" claim is **not met** by either candidate. It is recorded as an adverse result.
+
+**What SAQR-C fixed, on fresh seeds:**
+- Clear losses to XY fell from 54 points (saqr_h) to 1.
+- bitcomp, tornado (k ≤ 16) and multiflow are now tied with XY.
+- On transpose and bitrev it still wins, and the margin over the best of 9 at k = 32 is +9 % (transpose) and +4 % (bitrev).
+
+**What it gave up:**
+- **butterfly** (unseen) and **shuffle:** −5 to −10 % against the best adaptive comparator.
+  - These patterns benefit from moderate adaptivity without any column convergence, so the cue keeps them on XY.
+  - saqr_h was best or tied there (butterfly 36/36 with 8 strict wins).
+- **mixed:** −3 to −6 % against O1TURN and DBAR.
+- **tornado at k = 32:** −16 % against O1TURN.
+- **p99:** 11 failures, all at saturated loads of k = 4 and k = 8 near a comparator's knee.
+
+The two cues are complementary:
+- The SAQR-C column cue is right where XY is already balanced.
+- The SAQR-H repeat and hotspot cue is right on butterfly, shuffle and hotspots.
+
+Any combination must be designed on data other than seeds 401–405, which are now spent.
