@@ -1338,3 +1338,27 @@ G6 showed the two cues are right on opposite patterns.
 The cause is edge and near-edge routers. They see little transit traffic on any pattern, so the SAQR-H bit leaks through there and those sources go adaptive where XY was better.
 
 **Conclusion:** a combination needs a cue that separates short-X permutations from edge sources. That is open.
+
+## 24. Netrace PARSEC traces (10 November 2026)
+
+**Traces:** Netrace 1.0, PARSEC 2.1 simsmall, 64 cores (blackscholes, fluidanimate, x264).
+- Downloaded and converted on GitHub Actions (hash-checked; never committed) by `ci/netrace/convert.c` (conversion run 42850720313).
+- One region-of-interest window per benchmark, starting 10 % into the ROI, time-compressed into 25,000 cycles.
+- Nine load points per benchmark keep 2–100 % of the window's packets, chosen by packet-id hash (0.007–0.40 flits/node/cycle).
+- Timestamp replay: dependencies are not enforced, and every packet is 5 flits.
+- Classes: control packets (51–61 %) are critical; data packets are best effort.
+
+**Run:** 8×8 mesh, simulator seeds 601–603, 891 runs, 0 failures, 0 integrity errors. Scored by the frozen `scripts/evaluate_saqr_nt.py`; tables in `NT_VERDICT.md` on branch `saqr-results-nt`.
+
+| Criterion (27 points) | saqr_h | saqr_c |
+|---|---:|---:|
+| BT-T: tied-or-better vs best of 9 | **21** | 19 |
+| strict wins | 0 | 0 |
+| BT-L: critical p99 (unsaturated points) | 7/9 | 4/9 |
+| never worse than XY | 25 | **27** |
+
+**Reading:**
+- On application traffic neither candidate wins outright.
+- SAQR-C behaves like XY. On x264 it misses 6 of 9 points, by up to −13 % against Odd-Even at 0.10 flits/node/cycle.
+- SAQR-H's hotspot tracker helps on this memory-controller and L2-centred traffic: it is tied or better at 21 of 27 points and has the lower p99 on fluidanimate and x264.
+- Most points above 0.1 flits/node/cycle are saturated: p99 runs to thousands of cycles for every route, because the traffic is bursty and concentrated.
