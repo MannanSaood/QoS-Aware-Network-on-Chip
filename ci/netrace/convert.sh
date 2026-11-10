@@ -18,10 +18,12 @@ done
 tar xjf netrace-1.0.tar.bz2
 src=$(dirname "$(find . -name netrace.h | head -1)")
 gcc -O2 -I"$src" "$GITHUB_WORKSPACE/ci/netrace/convert.c" "$src/netrace.c" -o convert
-# Time-compression factors: offered load ~ 0.01 ... 0.5 flits/node/cycle from each trace's ROI rate.
-declare -A F=( [blackscholes]="2 5 10 20 29 39 59 78 98" [fluidanimate]="3 8 15 30 46 61 91 122 152" [x264]="6 15 30 61 91 121 182 242 303" )
+# One window per benchmark, compressed by F so the full window offers ~0.4-0.5 flits/node/cycle;
+# nine load points keep 2 % ... 100 % of its packets (permille).
+declare -A F=( [blackscholes]=98 [fluidanimate]=152 [x264]=303 )
+KEEP="20 50 100 200 300 400 600 800 1000"
 for b in blackscholes fluidanimate x264; do
-  ./convert ${b}_64c_simsmall.tra.bz2 "$OUT/traces/$b" 100 ${F[$b]} 2>/dev/null | sed "s/^/$b /" | tee -a "$OUT/counts.txt"
+  ./convert ${b}_64c_simsmall.tra.bz2 "$OUT/traces/$b" 100 ${F[$b]} $KEEP 2>/dev/null | sed "s/^/$b ${F[$b]} /" | tee -a "$OUT/counts.txt"
 done
 cd "$OUT" && python3 - <<'PY'
 import hashlib, json
@@ -29,11 +31,11 @@ from pathlib import Path
 m = {}
 for line in Path('counts.txt').read_text().split('\n'):
     if not line.strip(): continue
-    b, f, n, crit = line.split()
-    p = Path('traces') / f'{b}_f{f}.txt'
-    m[f'{b}_f{f}'] = dict(benchmark=b, factor=int(f), packets=int(n), critical=int(crit),
+    b, f, q, n, crit = line.split()
+    p = Path('traces') / f'{b}_q{q}.txt'
+    m[f'{b}_q{q}'] = dict(benchmark=b, factor=int(f), keep_permille=int(q), packets=int(n), critical=int(crit),
                          offered_flits_per_node_cycle=round(int(n) * 5 / (64 * 25000), 6),
                          sha256=hashlib.sha256(p.read_bytes()).hexdigest())
 Path('manifest.json').write_text(json.dumps(m, indent=1, sort_keys=True) + '\n')
-for k, v in sorted(m.items(), key=lambda kv: (kv[1]['benchmark'], kv[1]['factor'])): print(k, v['offered_flits_per_node_cycle'], v['packets'])
+for k, v in sorted(m.items(), key=lambda kv: (kv[1]['benchmark'], kv[1]['keep_permille'])): print(k, v['offered_flits_per_node_cycle'], v['packets'])
 PY
