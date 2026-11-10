@@ -10,6 +10,7 @@ Stages (env SAQR_STAGE):
   cpilot  SAQR-C design pilot on G5 seeds 301-302 (scripts/saqr_c_study.py)
   ctpilot SAQR-CT design pilot on seeds 301-302 (scripts/saqr_ct_study.py)
   g7      fresh held-out for SAQR-CT (scripts/saqr_g7_study.py)
+  nt      Netrace PARSEC traces on 8x8 (scripts/saqr_nt_study.py; traces from the conversion run in NT_RUN)
   g6      fresh held-out: 9 comparators, saqr_c and saqr_h, 15 patterns, seeds 401-405 (scripts/saqr_g6_study.py)
 
 Nothing here changes a frozen protocol. Scripts, binaries and receipts ship
@@ -89,11 +90,15 @@ class Stage:
             have = json.loads((d / 'protocol.json').read_text())
             assert want == have, f'{name} protocol mismatch (binary, sources or design differ from the frozen ones)'
             self.dir, self.proto = d, have
-        elif name in ('g5', 'o1t', 'cpilot', 'g6', 'ctpilot', 'g7'):
+        elif name in ('g5', 'o1t', 'cpilot', 'g6', 'ctpilot', 'g7', 'nt'):
             verify_frozen()
             import saqr_g5_study as gs
             self.gs = gs
-            if name == 'g7':
+            if name == 'nt':
+                import saqr_nt_study as nt
+                self.gs = nt
+                d, want = nt.NT_DIR, nt.protocol()
+            elif name == 'g7':
                 import saqr_g7_study as g7
                 self.gs = g7
                 d, want = g7.G7_DIR, g7.protocol()
@@ -143,7 +148,7 @@ class Stage:
         return out
 
     def make_trace(self, path, c):
-        if self.name in ('g5', 'o1t', 'cpilot', 'g6', 'ctpilot', 'g7'):
+        if self.name in ('g5', 'o1t', 'cpilot', 'g6', 'ctpilot', 'g7', 'nt'):
             return self.gs.make_trace(path, c)
         from chr_common import trace
         return trace(path, c['k'], c['load'], c['seed'], c['traffic'])

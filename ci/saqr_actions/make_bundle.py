@@ -47,13 +47,16 @@ FILES = [
     'scripts/saqr_ct_common.py', 'scripts/saqr_ct_study.py', 'scripts/setup_saqr_ct.py',
     'algorithms/saqr_ct/routing.hpp', 'simulators/booksim_saqr_ct/saqr_routes.cpp', '.deps/booksim2_saqr_ct/src/booksim',
     'scripts/traffic_g7.py', 'scripts/saqr_g7_study.py', 'scripts/evaluate_saqr_g7.py',
+    # Netrace (§24)
+    'scripts/saqr_nt_study.py', 'scripts/evaluate_saqr_nt.py', 'ci/netrace/convert.c', 'ci/netrace/convert.sh',
 ]
 # Stage protocol files, included once they exist (pilot protocol, pilot selection, G5 protocol).
 OPTIONAL = ['results/saqr_study/hot/pilot/protocol.json', 'results/saqr_study/hot/pilot/selection.json',
             'results/saqr_study/hot/g5/protocol.json', 'results/saqr_study/g5/protocol.json',
             'results/saqr_study/g5_o1t/protocol.json', 'results/saqr_study/col/pilot/protocol.json',
             'results/saqr_study/col/pilot/selection.json', 'results/saqr_study/g6/protocol.json',
-            'results/saqr_study/ct/pilot/protocol.json', 'results/saqr_study/ct/pilot/selection.json', 'results/saqr_study/g7/protocol.json']
+            'results/saqr_study/ct/pilot/protocol.json', 'results/saqr_study/ct/pilot/selection.json', 'results/saqr_study/g7/protocol.json',
+            'results/saqr_study/nt/trace_manifest.json', 'results/saqr_study/nt/protocol.json']
 
 
 def main():
