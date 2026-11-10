@@ -1,0 +1,908 @@
+{
+ "selected": "c25",
+ "rule": "max best_or_tied; then min below_xy; then order c25, ct16, ct32",
+ "score": {
+  "c25": {
+   "best_or_tied": 313,
+   "below_xy": 2,
+   "points": 360,
+   "fails": [
+    [
+     "k4 bitrev l6",
+     "topsis",
+     -7.8
+    ],
+    [
+     "k4 bitrev l7",
+     "topsis",
+     -7.5
+    ],
+    [
+     "k4 bitrev l8",
+     "dbar",
+     -6.9
+    ],
+    [
+     "k4 butterfly l6",
+     "dbar",
+     -12.8
+    ],
+    [
+     "k4 butterfly l7",
+     "dbar",
+     -11.2
+    ],
+    [
+     "k4 butterfly l8",
+     "dbar",
+     -10.5
+    ],
+    [
+     "k4 mixed l6",
+     "dbar",
+     -4.0
+    ],
+    [
+     "k4 mixed l7",
+     "dbar",
+     -8.8
+    ],
+    [
+     "k4 mixed l8",
+     "dbar",
+     -4.6
+    ],
+    [
+     "k4 randperm l6",
+     "topsis",
+     -3.0
+    ],
+    [
+     "k4 shuffle l6",
+     "topsis",
+     -8.7
+    ],
+    [
+     "k4 shuffle l7",
+     "westfirst",
+     -4.7
+    ],
+    [
+     "k4 shuffle l8",
+     "oefixed",
+     -3.2
+    ],
+    [
+     "k4 transpose l6",
+     "dbar",
+     -5.4
+    ],
+    [
+     "k4 transpose l7",
+     "footprint",
+     -3.4
+    ],
+    [
+     "k8 butterfly l6",
+     "duato",
+     -11.8
+    ],
+    [
+     "k8 butterfly l7",
+     "topsis",
+     -11.0
+    ],
+    [
+     "k8 butterfly l8",
+     "duato",
+     -9.5
+    ],
+    [
+     "k8 hotspot_edge l5",
+     "topsis",
+     -3.3
+    ],
+    [
+     "k8 mixed l6",
+     "dbar",
+     -8.6
+    ],
+    [
+     "k8 mixed l7",
+     "dbar",
+     -12.0
+    ],
+    [
+     "k8 shuffle l6",
+     "topsis",
+     -10.0
+    ],
+    [
+     "k8 shuffle l7",
+     "duato",
+     -8.5
+    ],
+    [
+     "k8 shuffle l8",
+     "duato",
+     -9.1
+    ],
+    [
+     "k16 butterfly l6",
+     "duato",
+     -9.4
+    ],
+    [
+     "k16 butterfly l7",
+     "duato",
+     -8.5
+    ],
+    [
+     "k16 butterfly l8",
+     "o1turn",
+     -8.7
+    ],
+    [
+     "k16 hotspot_edge l5",
+     "topsis",
+     -6.8
+    ],
+    [
+     "k16 hotspot_edge l6",
+     "oefixed",
+     -5.1
+    ],
+    [
+     "k16 mixed l7",
+     "o1turn",
+     -3.6
+    ],
+    [
+     "k16 mixed l8",
+     "o1turn",
+     -4.4
+    ],
+    [
+     "k16 shuffle l5",
+     "duato",
+     -6.3
+    ],
+    [
+     "k16 shuffle l7",
+     "oefixed",
+     -3.5
+    ],
+    [
+     "k16 shuffle l8",
+     "dbar",
+     -4.6
+    ],
+    [
+     "k32 butterfly l6",
+     "o1turn",
+     -7.3
+    ],
+    [
+     "k32 butterfly l7",
+     "o1turn",
+     -8.4
+    ],
+    [
+     "k32 butterfly l8",
+     "o1turn",
+     -9.3
+    ],
+    [
+     "k32 hotspot_corner l6",
+     "dbar",
+     -5.3
+    ],
+    [
+     "k32 hotspot_corner l7",
+     "dbar",
+     -4.2
+    ],
+    [
+     "k32 hotspot_edge l5",
+     "topsis",
+     -7.9
+    ],
+    [
+     "k32 hotspot_edge l6",
+     "oefixed",
+     -7.5
+    ],
+    [
+     "k32 hotspot_edge l7",
+     "oefixed",
+     -7.6
+    ],
+    [
+     "k32 hotspot_edge l8",
+     "oefixed",
+     -3.6
+    ],
+    [
+     "k32 shuffle l5",
+     "duato",
+     -8.1
+    ],
+    [
+     "k32 tornado l6",
+     "o1turn",
+     -19.7
+    ],
+    [
+     "k32 tornado l7",
+     "o1turn",
+     -19.6
+    ],
+    [
+     "k32 tornado l8",
+     "o1turn",
+     -16.2
+    ]
+   ]
+  },
+  "ct16": {
+   "best_or_tied": 297,
+   "below_xy": 38,
+   "points": 360,
+   "fails": [
+    [
+     "k4 bitcomp l5",
+     "xy",
+     -6.8
+    ],
+    [
+     "k4 bitcomp l6",
+     "xy",
+     -5.8
+    ],
+    [
+     "k4 bitcomp l7",
+     "xy",
+     -5.4
+    ],
+    [
+     "k4 bitcomp l8",
+     "xy",
+     -4.3
+    ],
+    [
+     "k4 mixed l6",
+     "dbar",
+     -4.1
+    ],
+    [
+     "k4 mixed l7",
+     "dbar",
+     -5.2
+    ],
+    [
+     "k4 mixed l8",
+     "dbar",
+     -3.8
+    ],
+    [
+     "k4 multiflow l6",
+     "dyad",
+     -3.2
+    ],
+    [
+     "k4 multiflow l7",
+     "xy",
+     -3.6
+    ],
+    [
+     "k4 randperm l8",
+     "xy",
+     -3.2
+    ],
+    [
+     "k4 shuffle l6",
+     "topsis",
+     -5.7
+    ],
+    [
+     "k4 shuffle l7",
+     "westfirst",
+     -7.2
+    ],
+    [
+     "k4 shuffle l8",
+     "oefixed",
+     -7.6
+    ],
+    [
+     "k4 tornado l7",
+     "xy",
+     -11.6
+    ],
+    [
+     "k4 tornado l8",
+     "xy",
+     -15.8
+    ],
+    [
+     "k8 bitcomp l5",
+     "xy",
+     -3.6
+    ],
+    [
+     "k8 mixed l6",
+     "dbar",
+     -9.7
+    ],
+    [
+     "k8 mixed l7",
+     "dbar",
+     -9.4
+    ],
+    [
+     "k8 mixed l8",
+     "o1turn",
+     -9.0
+    ],
+    [
+     "k8 multiflow l6",
+     "xy",
+     -3.1
+    ],
+    [
+     "k8 multiflow l7",
+     "xy",
+     -3.2
+    ],
+    [
+     "k8 randperm l6",
+     "xy",
+     -3.9
+    ],
+    [
+     "k8 randperm l7",
+     "xy",
+     -6.0
+    ],
+    [
+     "k8 randperm l8",
+     "xy",
+     -7.5
+    ],
+    [
+     "k8 shuffle l6",
+     "topsis",
+     -10.3
+    ],
+    [
+     "k8 shuffle l7",
+     "duato",
+     -7.9
+    ],
+    [
+     "k8 shuffle l8",
+     "duato",
+     -9.2
+    ],
+    [
+     "k8 tornado l5",
+     "xy",
+     -10.9
+    ],
+    [
+     "k8 tornado l6",
+     "xy",
+     -15.0
+    ],
+    [
+     "k8 tornado l7",
+     "xy",
+     -13.2
+    ],
+    [
+     "k8 tornado l8",
+     "xy",
+     -10.2
+    ],
+    [
+     "k16 bitcomp l5",
+     "xy",
+     -3.9
+    ],
+    [
+     "k16 hotspot_edge l5",
+     "topsis",
+     -6.3
+    ],
+    [
+     "k16 hotspot_edge l6",
+     "oefixed",
+     -4.8
+    ],
+    [
+     "k16 mixed l7",
+     "o1turn",
+     -6.2
+    ],
+    [
+     "k16 mixed l8",
+     "o1turn",
+     -9.0
+    ],
+    [
+     "k16 multiflow l6",
+     "xy",
+     -6.4
+    ],
+    [
+     "k16 multiflow l7",
+     "xy",
+     -4.2
+    ],
+    [
+     "k16 multiflow l8",
+     "xy",
+     -3.9
+    ],
+    [
+     "k16 randperm l6",
+     "xy",
+     -4.0
+    ],
+    [
+     "k16 randperm l7",
+     "xy",
+     -4.3
+    ],
+    [
+     "k16 randperm l8",
+     "xy",
+     -4.7
+    ],
+    [
+     "k16 shuffle l5",
+     "duato",
+     -6.9
+    ],
+    [
+     "k16 shuffle l7",
+     "oefixed",
+     -3.2
+    ],
+    [
+     "k16 shuffle l8",
+     "dbar",
+     -4.3
+    ],
+    [
+     "k16 tornado l5",
+     "xy",
+     -26.8
+    ],
+    [
+     "k16 tornado l6",
+     "xy",
+     -22.7
+    ],
+    [
+     "k16 tornado l7",
+     "xy",
+     -17.3
+    ],
+    [
+     "k16 tornado l8",
+     "xy",
+     -12.5
+    ],
+    [
+     "k32 hotspot_corner l6",
+     "dbar",
+     -5.0
+    ],
+    [
+     "k32 hotspot_corner l7",
+     "dbar",
+     -4.2
+    ],
+    [
+     "k32 hotspot_edge l5",
+     "topsis",
+     -7.7
+    ],
+    [
+     "k32 hotspot_edge l6",
+     "oefixed",
+     -7.1
+    ],
+    [
+     "k32 hotspot_edge l7",
+     "oefixed",
+     -7.9
+    ],
+    [
+     "k32 hotspot_edge l8",
+     "oefixed",
+     -3.4
+    ],
+    [
+     "k32 mixed l7",
+     "o1turn",
+     -3.2
+    ],
+    [
+     "k32 mixed l8",
+     "o1turn",
+     -5.6
+    ],
+    [
+     "k32 multiflow l6",
+     "xy",
+     -3.5
+    ],
+    [
+     "k32 shuffle l5",
+     "duato",
+     -7.6
+    ],
+    [
+     "k32 tornado l5",
+     "xy",
+     -23.6
+    ],
+    [
+     "k32 tornado l6",
+     "o1turn",
+     -37.1
+    ],
+    [
+     "k32 tornado l7",
+     "o1turn",
+     -31.0
+    ],
+    [
+     "k32 tornado l8",
+     "o1turn",
+     -24.2
+    ]
+   ]
+  },
+  "ct32": {
+   "best_or_tied": 294,
+   "below_xy": 44,
+   "points": 360,
+   "fails": [
+    [
+     "k4 bitcomp l5",
+     "xy",
+     -7.0
+    ],
+    [
+     "k4 bitcomp l6",
+     "xy",
+     -6.1
+    ],
+    [
+     "k4 bitcomp l7",
+     "xy",
+     -5.6
+    ],
+    [
+     "k4 bitcomp l8",
+     "xy",
+     -4.7
+    ],
+    [
+     "k4 mixed l7",
+     "dbar",
+     -4.5
+    ],
+    [
+     "k4 mixed l8",
+     "dbar",
+     -3.7
+    ],
+    [
+     "k4 multiflow l7",
+     "xy",
+     -3.7
+    ],
+    [
+     "k4 randperm l8",
+     "xy",
+     -3.0
+    ],
+    [
+     "k4 shuffle l6",
+     "topsis",
+     -5.1
+    ],
+    [
+     "k4 shuffle l7",
+     "westfirst",
+     -6.7
+    ],
+    [
+     "k4 shuffle l8",
+     "oefixed",
+     -7.2
+    ],
+    [
+     "k4 tornado l7",
+     "xy",
+     -18.8
+    ],
+    [
+     "k4 tornado l8",
+     "xy",
+     -23.5
+    ],
+    [
+     "k8 bitcomp l5",
+     "xy",
+     -3.2
+    ],
+    [
+     "k8 mixed l6",
+     "dbar",
+     -11.0
+    ],
+    [
+     "k8 mixed l7",
+     "dbar",
+     -12.3
+    ],
+    [
+     "k8 mixed l8",
+     "o1turn",
+     -10.9
+    ],
+    [
+     "k8 multiflow l6",
+     "xy",
+     -5.3
+    ],
+    [
+     "k8 randperm l6",
+     "xy",
+     -5.8
+    ],
+    [
+     "k8 randperm l7",
+     "xy",
+     -6.9
+    ],
+    [
+     "k8 randperm l8",
+     "xy",
+     -8.6
+    ],
+    [
+     "k8 shuffle l6",
+     "topsis",
+     -9.7
+    ],
+    [
+     "k8 shuffle l7",
+     "duato",
+     -8.2
+    ],
+    [
+     "k8 shuffle l8",
+     "duato",
+     -10.0
+    ],
+    [
+     "k8 tornado l5",
+     "xy",
+     -10.9
+    ],
+    [
+     "k8 tornado l6",
+     "xy",
+     -14.8
+    ],
+    [
+     "k8 tornado l7",
+     "xy",
+     -12.9
+    ],
+    [
+     "k8 tornado l8",
+     "xy",
+     -10.2
+    ],
+    [
+     "k16 bitcomp l5",
+     "xy",
+     -3.1
+    ],
+    [
+     "k16 hotspot_edge l5",
+     "topsis",
+     -6.1
+    ],
+    [
+     "k16 hotspot_edge l6",
+     "oefixed",
+     -4.4
+    ],
+    [
+     "k16 mixed l6",
+     "dbar",
+     -3.3
+    ],
+    [
+     "k16 mixed l7",
+     "o1turn",
+     -8.1
+    ],
+    [
+     "k16 mixed l8",
+     "o1turn",
+     -10.3
+    ],
+    [
+     "k16 multiflow l6",
+     "xy",
+     -8.1
+    ],
+    [
+     "k16 multiflow l7",
+     "xy",
+     -7.9
+    ],
+    [
+     "k16 multiflow l8",
+     "xy",
+     -6.3
+    ],
+    [
+     "k16 randperm l6",
+     "xy",
+     -5.0
+    ],
+    [
+     "k16 randperm l7",
+     "xy",
+     -5.0
+    ],
+    [
+     "k16 randperm l8",
+     "xy",
+     -5.7
+    ],
+    [
+     "k16 shuffle l5",
+     "duato",
+     -6.6
+    ],
+    [
+     "k16 shuffle l7",
+     "oefixed",
+     -3.3
+    ],
+    [
+     "k16 shuffle l8",
+     "dbar",
+     -4.2
+    ],
+    [
+     "k16 tornado l5",
+     "xy",
+     -27.6
+    ],
+    [
+     "k16 tornado l6",
+     "xy",
+     -23.0
+    ],
+    [
+     "k16 tornado l7",
+     "xy",
+     -17.2
+    ],
+    [
+     "k16 tornado l8",
+     "xy",
+     -12.7
+    ],
+    [
+     "k32 hotspot_corner l6",
+     "dbar",
+     -5.2
+    ],
+    [
+     "k32 hotspot_corner l7",
+     "dbar",
+     -4.0
+    ],
+    [
+     "k32 hotspot_edge l5",
+     "topsis",
+     -7.7
+    ],
+    [
+     "k32 hotspot_edge l6",
+     "oefixed",
+     -7.2
+    ],
+    [
+     "k32 hotspot_edge l7",
+     "oefixed",
+     -8.0
+    ],
+    [
+     "k32 hotspot_edge l8",
+     "oefixed",
+     -3.6
+    ],
+    [
+     "k32 mixed l7",
+     "o1turn",
+     -4.7
+    ],
+    [
+     "k32 mixed l8",
+     "o1turn",
+     -6.0
+    ],
+    [
+     "k32 multiflow l6",
+     "xy",
+     -5.9
+    ],
+    [
+     "k32 multiflow l7",
+     "xy",
+     -5.3
+    ],
+    [
+     "k32 multiflow l8",
+     "xy",
+     -3.7
+    ],
+    [
+     "k32 randperm l6",
+     "xy",
+     -3.4
+    ],
+    [
+     "k32 randperm l7",
+     "xy",
+     -4.9
+    ],
+    [
+     "k32 randperm l8",
+     "xy",
+     -3.5
+    ],
+    [
+     "k32 shuffle l5",
+     "duato",
+     -7.9
+    ],
+    [
+     "k32 tornado l5",
+     "xy",
+     -24.1
+    ],
+    [
+     "k32 tornado l6",
+     "o1turn",
+     -36.9
+    ],
+    [
+     "k32 tornado l7",
+     "o1turn",
+     -31.0
+    ],
+    [
+     "k32 tornado l8",
+     "o1turn",
+     -24.2
+    ]
+   ]
+  }
+ },
+ "pilot_protocol_sha256": "f3b006860b04169b21bdd67fa7a114a2d4f56cc6888f05a65cbd5c87b4530c9e"
+}
