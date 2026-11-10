@@ -1312,3 +1312,29 @@ G6 showed the two cues are right on opposite patterns.
 - **Candidates:** the selected saqr_ct, plus saqr_c (c25) as the reference.
 - **Criteria:** G6's, unchanged.
 - **Size:** 33,660 runs.
+
+### 23.5 Pilot result (10 November 2026): SAQR-CT not selected
+
+- **Run:** 2,400 runs, 0 failures, gate 86/86.
+- **Selection:** the fixed rule picked **c25** (SAQR-C), so SAQR-CT is dropped and G7 is not run (rule in §23.3).
+
+| Variant | Tied-best (of 360) | Below 0.97 × XY |
+|---|---:|---:|
+| c25 | **313** | **2** |
+| ct16 | 297 | 38 |
+| ct32 | 294 | 44 |
+
+**What the gate fixed:** butterfly misses fell from 12 to 0.
+
+**What it broke:**
+
+| Pattern | c25 misses | ct16 misses |
+|---|---:|---:|
+| tornado | 3 | 14 |
+| multiflow | 0 | 8 |
+| randperm | 1 | 7 |
+| bitcomp | 0 | 6 |
+
+The cause is edge and near-edge routers. They see little transit traffic on any pattern, so the SAQR-H bit leaks through there and those sources go adaptive where XY was better.
+
+**Conclusion:** a combination needs a cue that separates short-X permutations from edge sources. That is open.
