@@ -1258,3 +1258,57 @@ The two cues are complementary:
 - The SAQR-H repeat and hotspot cue is right on butterfly, shuffle and hotspots.
 
 Any combination must be designed on data other than seeds 401–405, which are now spent.
+
+## 23. SAQR-CT: column cue plus the SAQR-H cue, gated by transit evidence (designed 10 November 2026, after §22.6)
+
+### 23.1 Mechanism (`algorithms/saqr_ct/routing.hpp`)
+
+G6 showed the two cues are right on opposite patterns.
+
+**SAQR-C misses short-X patterns.** On butterfly, packets move at most one column, so the column tracker never sees them as transit traffic. SAQR-H, by contrast, was tied-best at every butterfly point.
+
+**SAQR-H is wrong where transit is rich and spread.** That covers bit complement, tornado and random flows.
+
+**The gate.** Each router counts transit head flits (those with X distance left) between its own injections. At every injection it folds that count into r, an 8-bit EWMA of transit flits per injected packet:
+- one transit flit per injected packet scores 32;
+- the count is capped at 8 (r ≤ 256);
+- the EWMA weight is 2^-3.
+
+**Header bit:** the column bit, OR (the SAQR-H bit AND r < threshold).
+
+**Cost and safety:**
+- Per router: an 8-bit counter, an 8-bit EWMA and a comparator, added to SAQR-C.
+- Route sets are unchanged, so the §9 deadlock argument holds.
+
+### 23.2 Build and checks (Actions run 42844039183)
+
+- **Binary:** `.deps/booksim2_saqr_ct`, sha `8188d990…`. The same job rebuilt the comparator binary (`94193fe2…`) and SAQR-C (`da8fdf6f…`) bit for bit.
+- **Unit tests:** `tests/saqr_ct_test.cpp` passes 7,197,898 checks against an independent reference model; every earlier suite still passes.
+- **Equivalence:** with the gate unset, the binary reproduces SAQR-C (c25) and the comparator binary (saqr_h, xy) exactly.
+- **Smoke** (8×8, seed 101): share of packets marked adaptive, ct16 / ct32:
+
+| Pattern | ct16 | ct32 |
+|---|---:|---:|
+| butterfly | 1.00 | 1.00 |
+| transpose | 0.85 | 0.94 |
+| bitcomp | 0.25 | 0.27 |
+| tornado (16×16) | 0.13 | 0.13 |
+
+- Bitcomp's non-zero share comes from edge-column sources, which see no transit at all.
+
+### 23.3 Pilot (frozen before it ran: `scripts/saqr_ct_study.py`)
+
+- **Data:** seeds 301–302; all 15 G6 patterns; meshes 4–32; load indices 3–8.
+- **Runs:** ct16 and ct32 on every case. Butterfly and randperm had never been run on these seeds, so all 9 comparators and c25 also run on those two patterns.
+- **Total:** 2,400 runs (stage `ctpilot`).
+- **Selection rule:** same as §22.4, choosing among c25, ct16 and ct32. If c25 wins, SAQR-CT is dropped.
+
+### 23.4 Fresh held-out G7 (defined before the pilot ran: `scripts/saqr_g7_study.py`, `scripts/evaluate_saqr_g7.py`)
+
+- **Seeds:** 501–505.
+- **Meshes:** 4–32.
+- **Traffic (17 patterns):** the 15 G6 patterns plus 2 never used for design: antitranspose and unshuffle (`scripts/traffic_g7.py`).
+- **Comparators:** the same 9.
+- **Candidates:** the selected saqr_ct, plus saqr_c (c25) as the reference.
+- **Criteria:** G6's, unchanged.
+- **Size:** 33,660 runs.
