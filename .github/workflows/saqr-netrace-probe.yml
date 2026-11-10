@@ -1,0 +1,16 @@
+# Netrace probe: downloads the Netrace library and the three smallest PARSEC traces on the runner
+# (nothing is committed) and reports their statistics. See ci/netrace/probe.sh.
+name: Netrace probe
+on:
+  workflow_dispatch:
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with: { ref: codex/hybrid-routing-research, sparse-checkout: ci/netrace }
+      - run: OUT="$GITHUB_WORKSPACE/netrace_out" bash ci/netrace/probe.sh
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with: { name: netrace-probe, path: netrace_out, if-no-files-found: ignore }
